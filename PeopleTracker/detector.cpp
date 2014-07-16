@@ -44,30 +44,25 @@ void Detector::draw(Mat& frame)
 //  </frame>
 XMLDetector::XMLDetector(const char* filename):Detector(XML)
 {
-	open_success=true;
-	file=xmlReadFile(filename,"UTF-8",XML_PARSE_RECOVER);
-	if (file == NULL)
-	{
-		cout<<"fail to open"<<endl;
-		open_success=false;
+	int r = file.LoadFile(filename);
+	// file=xmlReadFile(filename,"UTF-8",XML_PARSE_RECOVER);
+	if (r != 0) {
+		cout << "fail to open" << endl;
+		open_success = false;
 	}
-	if (open_success)
-	{
-		frameNode=xmlDocGetRootElement(file);
-		if (frameNode==NULL)
-		{
-			cout<<"empty file"<<endl;
-			open_success=false;
+	else {
+		open_success = true;
+		frame = file.RootElement();
+		if (frame == NULL) {
+			cout << "empty file" << endl;
+			open_success = false;
 		}
-		if (xmlStrcmp(frameNode->name,BAD_CAST"dataset"))
-		{
-			cout<<"bad file"<<endl;
-			open_success=false;
+		if (strcmp(frame->Name(), "dataset")) {
+			cout << "bad file, root is not with name dataset" << endl;
+			open_success = false;
 		}
-		frameNode=frameNode->children;
-		while (xmlStrcmp(frameNode->name,BAD_CAST"frame"))
-		{
-			frameNode=frameNode->next;
+		else {
+			frame = frame->FirstChildElement("frame");
 		}
 	}
 }
@@ -76,57 +71,45 @@ void XMLDetector::detect(const Mat& f)
 {
 	detection.clear();
 	response.clear();
-	if (frameNode!=NULL)
-	{
-		xmlNodePtr objectList=frameNode->children;
-		while (xmlStrcmp(objectList->name,BAD_CAST"objectlist"))
-		{
-			objectList=objectList->next;
-		}
-		xmlNodePtr object=objectList->children;
-		while (object!=NULL && xmlStrcmp(object->name,BAD_CAST"object"))
-		{
-			object=object->next;
-		}
-		while (object!=NULL)//object level
-		{
-			float confidence=1;
-			Rect res;
-			xmlNodePtr box=object->children;
-			while (xmlStrcmp(box->name,BAD_CAST"box") )
-			{
-				box=box->next;
-			}
-			temp=xmlGetProp(box,BAD_CAST"h");
-			res.height=(int)(string2float((char*)temp)+0.5);
-			xmlFree(temp);
-			temp=xmlGetProp(box,BAD_CAST"w");
-			res.width=(int)(string2float((char*)temp)+0.5);
-			xmlFree(temp);
-			temp=xmlGetProp(box,BAD_CAST"xc");
-			res.x=(int)(string2float((char*)temp)-0.5*res.width+0.5);
-			xmlFree(temp);
-			temp=xmlGetProp(box,BAD_CAST"yc");
-			res.y=(int)(string2float((char*)temp)-0.5*res.height+0.5);
-			xmlFree(temp);
+	bool r = false;
+	Result2D res;
+	Rect rectRes;
+	if (frame != NULL) {
+		r = true; //get the successive frame
 
-			detection.push_back(res);
-			response.push_back(confidence);
-			object=object->next;
-			while (object!=NULL && xmlStrcmp(object->name,BAD_CAST"object"))
+		txml::XMLElement *objectList = frame->FirstChildElement("objectList");
+		if (objectList != NULL) {
+			txml::XMLElement *object = objectList->FirstChildElement("object");
+			float confidence = string2float(object->Attribute("confidence"));
+			while (object != NULL) //object level
 			{
-				object=object->next;
+				Result2D res;
+				temp = object->Attribute("id");
+				res.id = string2int(temp);
+				txml::XMLElement *box = object->FirstChildElement("box");
 
+				if (box != NULL) {
+					temp = box->Attribute("h");
+					res.h = (float)string2float((char*)temp);
+					temp = box->Attribute("w");
+					res.w = (float)string2float((char*)temp);
+					temp = box->Attribute("xc");
+					res.xc = (float)string2float((char*)temp);
+					temp = box->Attribute("yc");
+					res.yc = (float)string2float((char*)temp);
+
+					rectRes.height = cvRound(res.h);
+					rectRes.width = cvRound(res.w);
+					rectRes.x = cvRound(res.xc - 0.5*res.w);
+					rectRes.y = cvRound(res.yc - 0.5*res.h);
+
+					detection.push_back(rectRes);
+					response.push_back(confidence);
+				}
+				object = object->NextSiblingElement("object");
 			}
 		}
-	}
-	if (frameNode!=NULL)
-	{
-		frameNode=frameNode->next;
-	}
-	while (frameNode!=NULL && xmlStrcmp(frameNode->name,BAD_CAST"frame"))
-	{
-		frameNode=frameNode->next;
+		frame = frame->NextSiblingElement("frame");
 	}
 }
 

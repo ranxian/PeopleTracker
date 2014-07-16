@@ -79,138 +79,112 @@ void ImageDataReader::readImg(Mat& frame)
 
 XMLBBoxReader::XMLBBoxReader(const char* filename)
 {
-	open_success=true;
-	file=xmlReadFile(filename,"UTF-8",XML_PARSE_RECOVER);
-	if (file == NULL)
+	int r = file.LoadFile(filename);
+	// file=xmlReadFile(filename,"UTF-8",XML_PARSE_RECOVER);
+	if (r != 0)
 	{
 		cout<<"fail to open"<<endl;
-		open_success=false;
+		open_success = false;
 	}
-	if (open_success)
+	else
 	{
-		frame=xmlDocGetRootElement(file);
-		if (frame==NULL)
+		open_success = true;
+		frame = file.RootElement();
+		if (frame == NULL)
 		{
-			cout<<"empty file"<<endl;
-			open_success=false;
+			cout << "empty file" << endl;
+			open_success = false;
 		}
-		if (xmlStrcmp(frame->name,BAD_CAST"dataset"))
+		if (strcmp(frame->Name(), "dataset"))
 		{
-			cout<<"bad file"<<endl;
-			open_success=false;
+			cout << "bad file, root is not with name dataset" << endl;
+			open_success = false;
 		}
-		frame=frame->children;
-	}				
+		else
+		{
+			frame = frame->FirstChildElement("frame");
+		}
+	}			
 }
 bool XMLBBoxReader::getNextFrameResult(vector<Result2D>& result)
 {
-	bool rt=false;
+	bool r = false;
 	result.clear();
-	while (frame!=NULL)
+	if (frame != NULL)
 	{
-		if (!xmlStrcmp(frame->name,BAD_CAST"frame"))
+		r = true; //get the successive frame
+
+		txml::XMLElement *objectList = frame->FirstChildElement("objectList");
+		if (objectList != NULL)
 		{
-			rt=true;//get the successive frame
-			xmlNodePtr objectList;
-			objectList=frame->children;
-			while (objectList!=NULL)//objectlist level
+			txml::XMLElement *object = objectList->FirstChildElement("object");
+			while (object!=NULL) //object level
 			{
-				if (!xmlStrcmp(objectList->name,BAD_CAST"objectlist"))
-				{
-					xmlNodePtr object=objectList->children;
-					while (object!=NULL)//object level
-					{
-						if (!xmlStrcmp(object->name,BAD_CAST"object"))
-						{
-							Result2D res;
-							temp=xmlGetProp(object,BAD_CAST"id");
-							res.id=string2int((char*)temp);
-							xmlFree(temp);
-							xmlNodePtr box=object->children;
-							while (box!=NULL)
-							{
-								if (!xmlStrcmp(box->name,BAD_CAST"box"))
-								{
-									temp=xmlGetProp(box,BAD_CAST"h");
-									res.h=(float)string2float((char*)temp);
-									xmlFree(temp);
-									temp=xmlGetProp(box,BAD_CAST"w");
-									res.w=(float)string2float((char*)temp);
-									xmlFree(temp);
-									temp=xmlGetProp(box,BAD_CAST"xc");
-									res.xc=(float)string2float((char*)temp);
-									xmlFree(temp);
-									temp=xmlGetProp(box,BAD_CAST"yc");
-									res.yc=(float)string2float((char*)temp);
-									xmlFree(temp);
-									break;
-								}
-								box=box->next;
-							}
-							result.push_back(res);
-						}
-						object=object->next;
-					}
-					break;
-				}	
-				objectList=objectList->next;
+				Result2D res;
+				temp = object->Attribute("id");
+				res.id=string2int(temp);
+				txml::XMLElement *box = object->FirstChildElement("box");
+
+				if (box != NULL) {
+					temp = box->Attribute("h");
+					res.h = (float)string2float((char*)temp);
+					temp = box->Attribute("w");
+					res.w = (float)string2float((char*)temp);
+					temp = box->Attribute("xc");
+					res.xc = (float)string2float((char*)temp);
+					temp = box->Attribute("yc");
+					res.yc = (float)string2float((char*)temp);
+					result.push_back(res);
+				}
+				object = object->NextSiblingElement("object");
 			}
-			break;
 		}
-		frame=frame->next;
+
+		frame = frame->NextSiblingElement("frame");
 	}
-	if (frame!=NULL)
-	{
-		frame=frame->next;
-	}		
-	return rt;
+	
+	return r;
 }	
 
 /* ****** ****** */
 
 XMLBBoxWriter::XMLBBoxWriter(const char* filename):frameCount(0)
 {
-	open_success=true;
-	writer = xmlNewTextWriterFilename(filename, 0);
-	if (writer == NULL) {
-		printf("testXmlwriterFilename: Error creating the xml writer\n");
-		open_success=false;
+	fopen_s(&file, filename, "w");
+	if (file == NULL) {
+		cerr << "can't open file " << filename << " for write" << endl;
+	} else {
+		open_success = true;
+		printer = txml::XMLPrinter(file);
+		printer.PushHeader(true, true);
+		printer.OpenElement("dataset");
 	}
-	rc=xmlTextWriterStartDocument(writer,NULL,ENCODING,NULL);
-	rc=xmlTextWriterStartElement(writer, BAD_CAST "dataset");
 }
 bool XMLBBoxWriter::putNextFrameResult(vector<Result2D>& result)
 {
-	rc = xmlTextWriterStartElement(writer, BAD_CAST "frame");
-	rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST "number",
-		"%d",frameCount);
-	rc=xmlTextWriterStartElement(writer,BAD_CAST"objectlist");
+	printer.OpenElement("frame");
+	printer.PushAttribute("number", frameCount);
+	printer.OpenElement("objectList");
 	vector<Result2D>::iterator it;
 	for (it=result.begin();it<result.end();it++)
 	{
-		rc = xmlTextWriterStartElement(writer, BAD_CAST "object");
-		rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST "id",
-			"%d",(*it).id);
-		rc=xmlTextWriterWriteFormatAttribute(writer, BAD_CAST "confidence",
-			"%lf",(*it).response);
-		rc = xmlTextWriterStartElement(writer, BAD_CAST "box");
-		rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST "h",
-			"%f",(*it).h);
-		rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST "w",
-			"%f",(*it).w);
-		rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST "xc",
-			"%f",(*it).xc);
-		rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST "yc",
-			"%f",(*it).yc);
-		//end box
-		rc = xmlTextWriterEndElement(writer);
-		//end object
-		rc = xmlTextWriterEndElement(writer);
+		printer.OpenElement("object");
+		printer.PushAttribute("id", (*it).id);
+		printer.PushAttribute("confidence", (*it).response);
+
+		printer.OpenElement("box");
+		printer.PushAttribute("h", (*it).h);
+		printer.PushAttribute("w", (*it).w);
+		printer.PushAttribute("xc", (*it).xc);
+		printer.PushAttribute("yc", (*it).yc);
+		printer.CloseElement(); // end box
+
+		printer.CloseElement(); // end object
 	}
-	//end objectlist
-	rc = xmlTextWriterEndElement(writer);
-	//end frame
-	rc = xmlTextWriterEndElement(writer);
+
+	printer.CloseElement(); // end objectList
+
+	printer.CloseElement(); // end frame
 
 	frameCount++;
 	return true;

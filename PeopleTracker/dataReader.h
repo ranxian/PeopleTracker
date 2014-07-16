@@ -36,6 +36,8 @@
 
 using namespace cv;
 using namespace std;
+using namespace tinyxml2;
+namespace txml = tinyxml2;
 
 #define VIDEO 0
 #define IMAGE 1
@@ -104,14 +106,14 @@ class XMLBBoxReader:public BBoxReader
 {
 public:
 	XMLBBoxReader(const char* filename);
-	~XMLBBoxReader() { xmlFreeDoc(file); }
+	// ~XMLBBoxReader() { }
 	inline bool getOpenSuc(){return open_success;}
 	// Return boxes in next frame
 	virtual bool getNextFrameResult(vector<Result2D>& result);
 private:
-	xmlDocPtr file;
-	xmlNodePtr frame;
-	xmlChar* temp;
+	txml::XMLDocument file;
+	txml::XMLElement *frame;
+	const char *temp; 
 	bool open_success;
 };
 #define ENCODING "UTF-8"
@@ -120,21 +122,17 @@ class XMLBBoxWriter: public BBoxWriter
 {
 public:
 	XMLBBoxWriter(const char* filename);
-	~XMLBBoxWriter()
-	{
-		rc = xmlTextWriterEndDocument(writer);
-		xmlFreeTextWriter(writer);
-	}
+
 	// Put box in next frame
 	virtual bool putNextFrameResult(vector<Result2D>& result);
 	inline bool getOpenSuc(){return open_success;}
-
+	~XMLBBoxWriter() { if (file != NULL) { fclose(file); } }
 private:
-	int rc;
-	xmlTextWriterPtr writer;
-	xmlChar *tmp;
+	txml::XMLPrinter printer;
+	const char *temp;
 	bool open_success;
 	int frameCount;
+	FILE *file;
 };
 
 

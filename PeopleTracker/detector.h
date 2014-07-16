@@ -57,18 +57,13 @@ protected:
 
 class XMLDetector:public Detector
 {
-	xmlDocPtr file;
-	xmlNodePtr frameNode;
-	xmlChar* temp;
+	txml::XMLDocument file;
+	txml::XMLElement *frame;
+	const char *temp;
 	bool open_success;
 public:
 	XMLDetector(const char* filename);
-	~XMLDetector()
-	{
-		xmlFreeDoc(file);
-		xmlCleanupParser();
-		xmlMemoryDump();
-	}
+	~XMLDetector() {}
 	virtual void detect(const Mat& f);
 };
 
