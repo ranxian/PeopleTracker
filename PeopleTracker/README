@@ -1,0 +1,81 @@
+/*************************************************************
+*	Implemetation of the multi-person tracking system described in paper
+*	"Online Multi-person Tracking by Tracker Hierarchy", Jianming Zhang, 
+*	Liliana Lo Presti, Stan Sclaroff, AVSS 2012
+*	http://www.cs.bu.edu/groups/ivc/html/paper_view.php?id=268
+*
+*	Copyright (C) 2012 Jianming Zhang
+*
+*	This program is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	This program is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*	If you have problems about this software, please contact: jmzhang@bu.edu
+***************************************************************/
+
+0. Description of this Software
+
+This software is an online multi-person tracking system. Its features are listed as below:
+
+a. It does not require calibration information.
+b. It uses single camera.
+c. It does not adopt any sliding window techniques or batch processing, i.e, it dose not look into the future.
+d. Given detections, it can process about 7 fps of a 700X600 video on a modern machine.
+e. It can work with the generic HOG detector in OpenCV.
+
+Currently, it should work well with mid or low-density scenes captrured by a narrow angle camera at a high position from ground, which gives less perspective distortion (like the Town Center data set). For cameras put at a low position, this system may give poorer performance due to the lack of calibration information and severe occlusion in the scenes. 
+
+
+1. How to Compile
+
+Platform: Windows, Linux
+Prerequisite libraries: iconv, libxml2, opencv 2.3+
+
+a. Install all the dependencies specified above.
+b. Put this source code in your local directory.
+c. Use CMake to generate a project file or a make file. You may need to input the paths for the required libraries. (For the use of CMake, please check online resources.)
+d. Build the generated project file or make file.
+e. Don't forget to put the config.txt together with the executable.
+
+
+2. How to Use
+
+USAGE:
+
+a.
+Hierarchy_Ensemble <path_of_sequence> <is_image> 
+b.
+Hierarchy_Ensemble <path_of_sequence> <is_image> <detection_file>
+
+<path_of_seuqence>: the path of the directory containing images or the path of the video
+<is_image>: '1' for image format sequence, '0' the video format sequence
+<detection_file>: the xml detection file, whose structure should follow the example in the supplementary files
+
+When <detection_file> is not specified, the program will use the HOG detector to detect pedestrians online; Otherwise, the xml file specified will be read to get the detection results in it. For the exact structure of the detection file, see the example files in the supplementary files.
+
+Before running the program, you may need to change the parameters stored in 'config.txt'. There are detailed explanations and recommended values in it.
+
+
+EXAMPLE:
+
+a.
+Hierarchy_Ensemble C:/video_data/TownCentreXVID.avi 0
+(The program will use the OpenCV's HOG detector)
+b.
+Hierarchy_Ensemble C:/video_data/PETS09S2L1/ 1 PETS09_S2L1_det_opencv.xml
+(The program will read the images stored in the directory and use the detection xml file as the source of detections)
+
+
+NOTE:
+
+(*) When the program is running, type 'p' to pause and 'q' to quit.
+(**) The tracking result will be recorded in a file named "output.xml".
