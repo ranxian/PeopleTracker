@@ -186,11 +186,11 @@ void EnsembleTracker::addAppTemplate(const Mat* frame_set,Rect iniWin)
 	Size2f detection_size((float)iniWin.width,(float)iniWin.height);
 	// First to see if new window is too rediculous
 	if (_template_list.size() == 1) {
-		_window_size.width = iniWin.width;
-		_window_size.height = iniWin.height;
+		_window_size.width = (float)iniWin.width;
+		_window_size.height = (float)iniWin.height;
 	} else {
-		if (abs((float)(iniWin.width - _window_size.width)) / _window_size.width > 0.3 ||
-		 	abs((float)(iniWin.height - _window_size.height)) / _window_size.height > 0.3 ) {
+		if (abs((float)(detection_size.width - _window_size.width)) / _window_size.width > 0.2 ||
+			abs((float)(detection_size.height - _window_size.height)) / _window_size.height > 0.2) {
 			// Too rediculous, Do nothing
 		} else {
 			_window_size.width = (float)(_window_size.width*(1-SCALE_UPDATE_RATE)+detection_size.width*SCALE_UPDATE_RATE);

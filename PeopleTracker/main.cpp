@@ -183,8 +183,8 @@ void multiTrack(int readerType,int detectorType)
 			vector<Result2D>::iterator it;
 			// Draw it
 			for (it = result.begin(); it != result.end(); it++) {
-				Point p1((*it).xc-(*it).w/2, (*it).yc-(*it).h/2);
-				Point p2((*it).xc+(*it).w/2, (*it).yc+(*it).h/2);
+				Point p1((int)((*it).xc-(*it).w/2), (int)((*it).yc-(*it).h/2));
+				Point p2((int)((*it).xc+(*it).w/2), (int)((*it).yc+(*it).h/2));
 				rectangle(frame, p1, p2, COLOR((*it).id), 3);
 			}
 			int n = 10000000;
@@ -229,39 +229,47 @@ void help()
 	getchar();
 }
 
+int main2(int argc, char **argv)
+{
+	cout << "Video name is " << argv[1] << endl;
+	VideoCapture cap(argv[1]);
+	Mat frame;
+
+	int nframe = (int)cap.get(CV_CAP_PROP_FRAME_COUNT);
+	int width = (int)cap.get(CV_CAP_PROP_FRAME_WIDTH);
+	int height = (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT);
+	cout << "number of frame: " << nframe << endl;
+	cout << "Width: " << width << endl << "Height: " << height << endl;
+	for (int i = 0; i < nframe; i++) {
+		cap.read(frame);
+		cout << i << endl;
+		imshow("Frame", frame);
+	}
+}
+
 int main(int argc,char** argv)
 {
-	if (argc !=3 && argc !=4)
-	{
-		help();
-		exit(1);
-	}
+	cout << "You have to put video and detection xml file in the Data directory" << endl
+		<< "and make the video and xml file with the same base name." << endl 
+		<< "Enter the video name and prefix to run the program:" << endl;
+	
+	string videoName;
+	string prefix;
+
+	cin >> videoName >> prefix;
+
+	_sequence_path_ = "Data\\" + videoName + prefix;
+	_detection_xml_file_ = "Data\\" + videoName + ".xml";
 
 	read_config();
 
-	_sequence_path_ = string(argv[1]);
 	int seq_format;
 
 	PLAY_RESULT = 0;
-	if (argv[2][0] == '1')
-		seq_format=IMAGE;
-	else if (argv[2][0] == '0')
-		seq_format=VIDEO;
-	else if (argv[2][0] == '2') {
-		seq_format = VIDEO;
-		PLAY_RESULT = 1;
-	}
 
 	seq_format = VIDEO;
 
-	if (argc>3)
-	{
-		_detection_xml_file_=string(argv[3]);
-		_result_xml_file_ = string(argv[3]);
-		multiTrack(seq_format,XML);
-	}
-	else
-		multiTrack(seq_format,HOG);
+	multiTrack(seq_format, XML);
 
 	return 0;
 }

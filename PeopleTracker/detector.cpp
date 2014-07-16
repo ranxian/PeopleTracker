@@ -77,10 +77,12 @@ void XMLDetector::detect(const Mat& f)
 	if (frame != NULL) {
 		r = true; //get the successive frame
 
-		txml::XMLElement *objectList = frame->FirstChildElement("objectList");
+		txml::XMLElement *objectList = frame->FirstChildElement("objectlist");
 		if (objectList != NULL) {
 			txml::XMLElement *object = objectList->FirstChildElement("object");
-			float confidence = string2float(object->Attribute("confidence"));
+			float confidence = 0;
+			if (object != NULL)
+				confidence = string2float(object->Attribute("confidence"));
 			while (object != NULL) //object level
 			{
 				Result2D res;
@@ -103,6 +105,8 @@ void XMLDetector::detect(const Mat& f)
 					rectRes.x = cvRound(res.xc - 0.5*res.w);
 					rectRes.y = cvRound(res.yc - 0.5*res.h);
 
+					cout << "Height is " << rectRes.height << endl;
+
 					detection.push_back(rectRes);
 					response.push_back(confidence);
 				}
@@ -110,6 +114,8 @@ void XMLDetector::detect(const Mat& f)
 			}
 		}
 		frame = frame->NextSiblingElement("frame");
+	} else {
+		cout << "No frame doc" << endl;
 	}
 }
 

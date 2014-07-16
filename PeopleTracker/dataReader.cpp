@@ -114,7 +114,7 @@ bool XMLBBoxReader::getNextFrameResult(vector<Result2D>& result)
 	{
 		r = true; //get the successive frame
 
-		txml::XMLElement *objectList = frame->FirstChildElement("objectList");
+		txml::XMLElement *objectList = frame->FirstChildElement("objectlist");
 		if (objectList != NULL)
 		{
 			txml::XMLElement *object = objectList->FirstChildElement("object");
