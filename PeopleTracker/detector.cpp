@@ -1,3 +1,6 @@
+/*
+ * Refined by Ran Xian, xianran@pku.edu.cn
+ */
 /*************************************************************
 *	Implemetation of the multi-person tracking system described in paper
 *	"Online Multi-person Tracking by Tracker Hierarchy", Jianming Zhang,
@@ -22,7 +25,6 @@
 *	If you have problems about this software, please contact: jmzhang@bu.edu
 ***************************************************************/
 
-
 #include "detector.h"
 
 // Draw detected object on @frame
@@ -30,7 +32,7 @@ void Detector::draw(Mat& frame)
 {
 	for (size_t i=0;i<detection.size();++i)
 		// Draw a random color box
-		rectangle(frame,detection[i],Scalar((3*i)%256,(57*i)%256,(301*i)%256));
+		rectangle(frame,detection[i],Scalar((double)((3*i)%256),(double)((57*i)%256),(double)((301*i)%256)));
 }
 
 /* ****** ****** */

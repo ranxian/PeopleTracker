@@ -152,7 +152,7 @@ XMLBBoxWriter::XMLBBoxWriter(const char* filename):frameCount(0)
 {
 	fopen_s(&file, filename, "w");
 	if (file == NULL) {
-		cerr << "can't open file " << filename << " for write" << endl;
+		cout << "can't open file " << filename << " for write" << endl;
 	} else {
 		open_success = true;
 		printer = txml::XMLPrinter(file);
@@ -162,10 +162,12 @@ XMLBBoxWriter::XMLBBoxWriter(const char* filename):frameCount(0)
 }
 bool XMLBBoxWriter::putNextFrameResult(vector<Result2D>& result)
 {
+	// return true;
 	printer.OpenElement("frame");
 	printer.PushAttribute("number", frameCount);
-	printer.OpenElement("objectList");
+	printer.OpenElement("objectlist");
 	vector<Result2D>::iterator it;
+
 	for (it=result.begin();it<result.end();it++)
 	{
 		printer.OpenElement("object");
@@ -182,10 +184,10 @@ bool XMLBBoxWriter::putNextFrameResult(vector<Result2D>& result)
 		printer.CloseElement(); // end object
 	}
 
-	printer.CloseElement(); // end objectList
-
+	printer.CloseElement(); // end objectlist
+	cout << 6 << endl;
 	printer.CloseElement(); // end frame
-
+	cout << 7 << endl;
 	frameCount++;
 	return true;
 }

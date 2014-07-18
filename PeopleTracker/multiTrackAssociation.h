@@ -148,7 +148,8 @@ class TrakerManager
 public:
 	TrakerManager(
 		Detector* detctor,Mat& frame,
-		double thresh_promotion);
+		double thresh_promotion,
+		string output_path);
 	~TrakerManager();	
 	void doWork(Mat& frame);
 

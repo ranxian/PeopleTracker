@@ -247,12 +247,12 @@ void Controller::calcSuspiciousArea(list<EnsembleTracker*>& _tracker_list)
 }
 
 /************************************************************************/
-TrakerManager::TrakerManager(Detector* detector,Mat& frame,double thresh_promotion)
+TrakerManager::TrakerManager(Detector* detector,Mat& frame,double thresh_promotion, string output_path)
 	:_detector(detector),
 	_my_char(0),
 	_frame_count(0),
 	_tracker_count(0),
-	resultWriter(RESULT_OUTPUT_XML_FILE),
+	resultWriter(output_path.c_str()),
 	_controller(frame.size(),8,8,0.01,1/COUNT_NUM,thresh_promotion)
 {
 	pMog = new BackgroundSubtractorMOG2();
@@ -582,7 +582,7 @@ void TrakerManager::doWork(Mat& frame)
 	_tracker_list.sort(TrakerManager::compareTraGroup);
 
 	// record results to xml file
-	resultWriter.putNextFrameResult(output);
+ 	// resultWriter.putNextFrameResult(output);
 
 	// feed to heatMap
 	heatmap.feed(output);

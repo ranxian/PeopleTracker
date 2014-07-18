@@ -126,7 +126,13 @@ public:
 	// Put box in next frame
 	virtual bool putNextFrameResult(vector<Result2D>& result);
 	inline bool getOpenSuc(){return open_success;}
-	~XMLBBoxWriter() { if (file != NULL) { fclose(file); } }
+	~XMLBBoxWriter() 
+	{ 
+		if (file != NULL) { 
+			printer.CloseElement();  
+			fclose(file); 
+		} 
+	}
 private:
 	txml::XMLPrinter printer;
 	const char *temp;

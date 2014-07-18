@@ -26,8 +26,6 @@
 #ifndef _PARAMETER_
 #define _PARAMETER_
 
-#define RESULT_OUTPUT_XML_FILE "output.xml"
-
 // multi-object level tracking parameter
 extern int MAX_TRACKER_NUM;
 extern int MAX_TEMPLATE_SIZE;

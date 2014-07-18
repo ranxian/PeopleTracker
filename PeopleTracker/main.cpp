@@ -79,6 +79,8 @@ static string _sequence_path_;
 static string _detection_xml_file_;
 static string _result_xml_file_;
 
+string result_output_xmlpath;
+
 //Configuration
 int MAX_TRACKER_NUM;
 int MAX_TEMPLATE_SIZE;
@@ -88,7 +90,6 @@ double TRACKING_TO_BODYSIZE_RATIO;
 int FRAME_RATE;
 double TIME_WINDOW_SIZE;
 double HOG_DETECT_FRAME_RATIO;
-int PLAY_RESULT;
 
 // Display set
 int show_detection = 0;
@@ -173,29 +174,20 @@ void multiTrack(int readerType,int detectorType)
 		break;
 	}
 
-	TrakerManager mTrack(detector,frame,EXPERT_THRESH);
-	XMLBBoxReader boxReader(_result_xml_file_.c_str());
-	vector<Result2D> result;
+	TrakerManager mTrack(detector, frame, EXPERT_THRESH, result_output_xmlpath);
+	VideoWriter writer;
+	writer.open("Data\\result.mpg", CV_FOURCC('X', 'V', 'I', 'D'), 20, 
+				Size(frame.cols, frame.rows));
+	
 	for (int frameCount=0;frame.data!=NULL;frameCount++)
 	{
-		if (PLAY_RESULT) {
-			boxReader.getNextFrameResult(result);
-			vector<Result2D>::iterator it;
-			// Draw it
-			for (it = result.begin(); it != result.end(); it++) {
-				Point p1((int)((*it).xc-(*it).w/2), (int)((*it).yc-(*it).h/2));
-				Point p2((int)((*it).xc+(*it).w/2), (int)((*it).yc+(*it).h/2));
-				rectangle(frame, p1, p2, COLOR((*it).id), 3);
-			}
-			int n = 10000000;
-			while(n--);
-		} else {
-			mTrack.doWork(frame);	
-		}
+		mTrack.doWork(frame);	
 		
+		cout << "HERE" << endl;
 		imshow("multiTrack", frame);
 
 		reader->readImg(frame);
+		writer.write(frame);
 
 		char c = waitKey(1);
 		if(c == 'q') break;
@@ -229,47 +221,64 @@ void help()
 	getchar();
 }
 
-int main2(int argc, char **argv)
+void playResult()
 {
-	cout << "Video name is " << argv[1] << endl;
-	VideoCapture cap(argv[1]);
-	Mat frame;
+	SeqReader* reader;
+	XMLBBoxReader boxReader(_result_xml_file_.c_str());
+	vector<Result2D> result;
 
-	int nframe = (int)cap.get(CV_CAP_PROP_FRAME_COUNT);
-	int width = (int)cap.get(CV_CAP_PROP_FRAME_WIDTH);
-	int height = (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT);
-	cout << "number of frame: " << nframe << endl;
-	cout << "Width: " << width << endl << "Height: " << height << endl;
-	for (int i = 0; i < nframe; i++) {
-		cap.read(frame);
-		cout << i << endl;
-		imshow("Frame", frame);
+	reader = new VideoReader(_sequence_path_);
+	Mat frame;
+	while (true) {
+		reader->readImg(frame);
+		if (frame.data == NULL)
+			break;
+		boxReader.getNextFrameResult(result);
+		vector<Result2D>::iterator it;
+		for (it = result.begin(); it != result.end(); it++) {
+			Point p1((int)((*it).xc - (*it).w / 2), (int)((*it).yc - (*it).h / 2));
+			Point p2((int)((*it).xc + (*it).w / 2), (int)((*it).yc + (*it).h / 2));
+			rectangle(frame, p1, p2, COLOR((*it).id), 3);
+		}
+		int n = 10000000;
+		while (n--);
+		imshow("Result", frame);
 	}
+
+	delete reader;
 }
 
 int main(int argc,char** argv)
 {
-	cout << "You have to put video and detection xml file in the Data directory" << endl
-		<< "and make the video and xml file with the same base name." << endl 
-		<< "Enter the video name and prefix to run the program:" << endl;
-	
-	string videoName;
-	string prefix;
+	cout << "1: Play Result, 2: Run" << endl;
+	int option;
+	cin >> option;
 
-	cin >> videoName >> prefix;
+	if (option == 2) {
+		cout << "You have to put video and detection xml file in the Data directory" << endl
+			<< "and make the video and xml file with the same base name." << endl
+			<< "Enter the video name and prefix to run the program (like people .mp4)" << endl;
 
-	_sequence_path_ = "Data\\" + videoName + prefix;
-	_detection_xml_file_ = "Data\\" + videoName + ".xml";
+		string videoName;
+		string prefix;
 
-	read_config();
+		cin >> videoName >> prefix;
 
-	int seq_format;
-
-	PLAY_RESULT = 0;
-
-	seq_format = VIDEO;
-
-	multiTrack(seq_format, XML);
+		_sequence_path_ = "Data\\" + videoName + prefix;
+		_detection_xml_file_ = "Data\\" + videoName + ".xml";
+		result_output_xmlpath = "Data\\" + videoName + "-result.xml";
+		
+		read_config();
+		multiTrack(VIDEO, XML);
+	} else {
+		cout << "Enter video name and the result xml file name:" << endl;
+		string videoName, resultXml;
+		cin >> videoName >> resultXml;
+		_sequence_path_ = "Data\\" + videoName;
+		_result_xml_file_ = "Data\\" + resultXml;
+		cout << _result_xml_file_ << endl;
+		playResult();
+	}
 
 	return 0;
 }
