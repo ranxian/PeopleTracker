@@ -14,7 +14,7 @@ MAX_TRACKER_NUM: 20
 MAX_TEMPLATE_SIZE: 20
 
 #Minimum template size for an expert tracker (should be less than MAX_TEMPLATE_SIZE)
-EXPERT_THRESH: 5
+EXPERT_THRESH: 8
 
 # Rescale factor to transform the detection window to the body size window(some detectors' output window may include margin around the body. For opencv's hog detector, 0.64 is recomended)
 BODYSIZE_TO_DETECTION_RATIO: 1
