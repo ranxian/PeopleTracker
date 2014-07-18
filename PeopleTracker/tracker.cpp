@@ -24,7 +24,7 @@
 
 #include "tracker.h"
 
-#define SCALE_UPDATE_RATE 0.4
+#define SCALE_UPDATE_RATE 0.6
 #define HIST_MATCH_UPDATE 0.01
 
 list<EnsembleTracker*> EnsembleTracker::_TRASH_LIST;

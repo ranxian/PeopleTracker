@@ -1,3 +1,7 @@
+/*
+ * Refined by Ran Xian in 2014
+ */
+
 /*************************************************************
 *	Implemetation of the multi-person tracking system described in paper
 *	"Online Multi-person Tracking by Tracker Hierarchy", Jianming Zhang,
@@ -20,51 +24,13 @@
 *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 *	If you have problems about this software, please contact: jmzhang@bu.edu
-***************************************************************/
-/*
-USAGE:
-
-	a.
-	Hierarchy_Ensemble <path_of_sequence> <is_image>
-	b.
-	Hierarchy_Ensemble <path_of_sequence> <is_image> <path_detection_file>
-	c.
-	Hierarchy_Ensemble <path_of_result> 2
-
-	<path_of_seuqence>: the path of the directory containing images or the path of the video
-	<is_image>: '1' for image format sequence, '0' the video format sequence
-	<path_detection_file>: the xml detection file, whose structure should follow the example in
-	the supplementary files
-
-	When <detection_file> is not specified, the program will use the HOG detector to detect
-	pedestrians online; Otherwise, the xml file specified will be read to get the detection results in
-	it. For the exact structure of the detection file, see the example files in the supplementary files.
-
-	You may need to change the parameters stored in 'config.txt'. There are detailed explanations and
-	recommended values in it.
-
-
-EXAMPLE:
-
-	a.
-	Hierarchy_Ensemble C:/video_data/TownCentreXVID.avi 0
-	(The program will use the OpenCV's HOG detector)
-	b.
-	Hierarchy_Ensemble C:/video_data/PETS09S2L1/ 1 C:/PETS09_S2L1_det_opencv.xml
-	(The program will read the images stored in the directory and use the detection xml file as the
-	source of detections)
-
-
-NOTE:
-
-	(*) When the program is running, type 'p' to pause and 'q' to quit.
-	(**) The tracking result will be recorded in a file named "output.xml".
 */
 
 #include <ctime>
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <Windows.h>
 
 #include "tracker.h"
 #include "detector.h"
@@ -78,8 +44,7 @@ using namespace std;
 static string _sequence_path_;
 static string _detection_xml_file_;
 static string _result_xml_file_;
-
-string result_output_xmlpath;
+static string result_output_xmlpath;
 
 //Configuration
 int MAX_TRACKER_NUM;
@@ -205,22 +170,6 @@ void multiTrack(int readerType,int detectorType)
 	delete detector;
 }
 
-void help()
-{
-	cout<<"usage: \n\n"
-		"1.\n"
-		"Hierarchy_Ensemble <sequence_path> <is_image>\n"
-		"(by default, it uses hog detector in opencv to detect pedestrians)\n\n"
-
-		"2.\n"
-		"Hierarchy_Ensemble <sequence_path> <is_image> <detection_xml_file_path>\n"
-		"(it uses detection stored in the specified xml file. You may rescale the detection bounding box "
-		"by tuning parameters in the \"he_config.txt\")\n\n"
-
-		"<is_image>: \'1\' for image format data. \'0\' for video format data.\n";
-	getchar();
-}
-
 void playResult()
 {
 	SeqReader* reader;
@@ -228,6 +177,7 @@ void playResult()
 	vector<Result2D> result;
 
 	reader = new VideoReader(_sequence_path_);
+	cout << _sequence_path_ << endl;
 	Mat frame;
 	while (true) {
 		reader->readImg(frame);
@@ -240,12 +190,24 @@ void playResult()
 			Point p2((int)((*it).xc + (*it).w / 2), (int)((*it).yc + (*it).h / 2));
 			rectangle(frame, p1, p2, COLOR((*it).id), 3);
 		}
-		int n = 10000000;
-		while (n--);
 		imshow("Result", frame);
+		Sleep(1000 / 35.0);
 	}
 
 	delete reader;
+}
+
+// Turn xx.mp4 to xx
+string getBaseName(string videoName)
+{
+	char buf[256];
+	strcpy_s(buf, videoName.c_str());
+	strtok(buf, ".");
+	char *bn = strtok(NULL, buf);
+	if (bn == NULL)
+		return "";
+	else
+		return String(buf);
 }
 
 int main(int argc,char** argv)
@@ -255,27 +217,28 @@ int main(int argc,char** argv)
 	cin >> option;
 
 	if (option == 2) {
-		cout << "You have to put video and detection xml file in the Data directory" << endl
-			<< "and make the video and xml file with the same base name." << endl
-			<< "Enter the video name and prefix to run the program (like people .mp4)" << endl;
+		cout << "Make sure the video is in the Data directory" << endl
+			<< "And the detection xml is in the same directory and same base name" << endl
+			<< "For example, if video named people.mp4 is given, a people.xml is " << endl
+			<< "Expected." << endl;
+
+		cout << "Enter the video name: ";
 
 		string videoName;
-		string prefix;
-
-		cin >> videoName >> prefix;
-
-		_sequence_path_ = "Data\\" + videoName + prefix;
-		_detection_xml_file_ = "Data\\" + videoName + ".xml";
-		result_output_xmlpath = "Data\\" + videoName + "-result.xml";
+		cin >> videoName;
+		string baseName = getBaseName(videoName);
+		_sequence_path_ = "Data\\" + videoName;
+		_detection_xml_file_ = "Data\\" + baseName + ".xml";
+		result_output_xmlpath = "Data\\" + baseName + "-result.xml";
 		
 		read_config();
 		multiTrack(VIDEO, XML);
 	} else {
-		cout << "Enter video name and the result xml file name:" << endl;
-		string videoName, resultXml;
-		cin >> videoName >> resultXml;
+		cout << "Enter video name: ";
+		string videoName;
+		cin >> videoName;
 		_sequence_path_ = "Data\\" + videoName;
-		_result_xml_file_ = "Data\\" + resultXml;
+		_result_xml_file_ = "Data\\" + getBaseName(videoName) + "-result.xml";
 		cout << _result_xml_file_ << endl;
 		playResult();
 	}
