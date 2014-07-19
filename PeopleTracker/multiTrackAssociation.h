@@ -148,15 +148,18 @@ class TrakerManager
 public:
 	TrakerManager(
 		Detector* detctor,Mat& frame,
-		double thresh_promotion,
-		string output_path);
+		double thresh_promotion);
 	~TrakerManager();	
 	void doWork(Mat& frame);
 
 	void setKey(char c)
 	{
 		_my_char = c;
-	}	
+	}
+
+	vector<Result2D> getCurrentFrameResult() {
+		return _currentFrameResult;
+	}
 private:	
 	void doHungarianAlg(const vector<Rect>& detections);
 	inline static bool compareTraGroup(EnsembleTracker* c1,EnsembleTracker* c2)
@@ -174,6 +177,8 @@ private:
 	int _frame_count;
 	
 	Mat _occupancy_map;	
+
+	vector<Result2D> _currentFrameResult;
 
 	double _thresh_for_expert_;
 	// Background substraction

@@ -127,11 +127,9 @@ public:
 	virtual bool putNextFrameResult(vector<Result2D>& result);
 	inline bool getOpenSuc(){return open_success;}
 	~XMLBBoxWriter() 
-	{ 
-		if (file != NULL) { 
-			printer.CloseElement();  
-			fclose(file); 
-		} 
+	{
+		cout << "XMLBoxWriter deconstructed" << endl;
+		printer.CloseElement();
 	}
 private:
 	txml::XMLPrinter printer;

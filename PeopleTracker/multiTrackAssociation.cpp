@@ -247,7 +247,7 @@ void Controller::calcSuspiciousArea(list<EnsembleTracker*>& _tracker_list)
 }
 
 /************************************************************************/
-TrakerManager::TrakerManager(Detector* detector,Mat& frame,double thresh_promotion, string output_path)
+TrakerManager::TrakerManager(Detector* detector,Mat& frame,double thresh_promotion)
 	:_detector(detector),
 	_my_char(0),
 	_frame_count(0),
@@ -259,8 +259,10 @@ TrakerManager::TrakerManager(Detector* detector,Mat& frame,double thresh_promoti
 }
 TrakerManager::~TrakerManager()
 {
+	cout << "Goting to deconstruct" << endl;
 	for (list<EnsembleTracker*>::iterator i=_tracker_list.begin();i!=_tracker_list.end();i++)
 		delete *i;
+	cout << "TrackerManager deconstructed" << endl;
 }
 void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 {
@@ -581,7 +583,7 @@ void TrakerManager::doWork(Mat& frame)
 	_tracker_list.sort(TrakerManager::compareTraGroup);
 
 	// record results to xml file
- 	// resultWriter.putNextFrameResult(output);
+	_currentFrameResult = output;
 
 	// feed to heatMap
 	heatmap.feed(output);

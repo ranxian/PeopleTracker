@@ -101,6 +101,36 @@ void read_config()
 	conf_file.close();
 }
 
+static void writeFrameToXml(tinyxml2::XMLPrinter &printer, vector<Result2D> &results)
+{
+	static int frameCount = 0;
+	printer.OpenElement("frame");
+	printer.PushAttribute("number", frameCount);
+	printer.OpenElement("objectlist");
+
+	vector<Result2D>::iterator it;
+	for (it = results.begin(); it != results.end(); it++) {
+		cout << (*it).id << endl;
+		cout << (*it).yc << endl;
+		printer.OpenElement("object");
+		printer.PushAttribute("id", (*it).id);
+		printer.PushAttribute("confidence", (*it).response);
+
+		printer.OpenElement("box");
+		printer.PushAttribute("h", (*it).h);
+		printer.PushAttribute("w", (*it).w);
+		printer.PushAttribute("xc", (*it).xc);
+		printer.PushAttribute("yc", (*it).yc);
+		printer.CloseElement(); // end box
+
+		printer.CloseElement(); // end object
+	}
+
+	printer.CloseElement(); // end objectlist
+	printer.CloseElement(); // end frame
+	frameCount++;
+}
+
 void multiTrack(int readerType,int detectorType)
 {
 	namedWindow("multiTrack",CV_WINDOW_AUTOSIZE);
@@ -139,17 +169,24 @@ void multiTrack(int readerType,int detectorType)
 		break;
 	}
 
-	TrakerManager mTrack(detector, frame, EXPERT_THRESH, result_output_xmlpath);
+	TrakerManager mTrack(detector, frame, EXPERT_THRESH);
 	VideoWriter writer;
 	writer.open("Data\\result.mpg", CV_FOURCC('X', 'V', 'I', 'D'), 20, 
 				Size(frame.cols, frame.rows));
+	FILE *file = fopen(result_output_xmlpath.c_str(), "w");
 	
+	tinyxml2::XMLPrinter printer(file);
+	
+	printer.PushHeader(true, true);
+	printer.OpenElement("dataset");
+
 	for (int frameCount=0;frame.data!=NULL;frameCount++)
 	{
 		mTrack.doWork(frame);	
 		
 		imshow("multiTrack", frame);
 
+		writeFrameToXml(printer, mTrack.getCurrentFrameResult());
 		reader->readImg(frame);
 		writer.write(frame);
 
@@ -165,6 +202,8 @@ void multiTrack(int readerType,int detectorType)
 		}
 	}
 
+	printer.CloseElement();
+	fprintf(file, printer.CStr());
 	delete reader;
 	delete detector;
 }

@@ -373,8 +373,10 @@ void EnsembleTracker::deletePoorTemplate(double threshold)
 }
 void EnsembleTracker::deletePoorestTemplate()
 {
-	delete _template_list.back();
-	_template_list.pop_back();
+	if (_template_list.size() >= 1) {
+		delete _template_list.back();
+		_template_list.pop_back();
+	}
 }
 void EnsembleTracker::demote()
 {

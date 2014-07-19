@@ -150,27 +150,29 @@ bool XMLBBoxReader::getNextFrameResult(vector<Result2D>& result)
 
 XMLBBoxWriter::XMLBBoxWriter(const char* filename):frameCount(0)
 {
-	cout << "what" << endl;
-	fopen_s(&file, filename, "w");
+	file = fopen(filename, "w");
 	if (file == NULL) {
 		cout << "can't open file " << filename << " for write" << endl;
 	} else {
 		open_success = true;
 		printer = txml::XMLPrinter(file);
 		printer.PushHeader(true, true);
-		printer.OpenElement("dataset");
+		cout << "Open file " << filename << " for write" << endl;
 	}
+	printer.OpenElement("dataset");
 }
+
 bool XMLBBoxWriter::putNextFrameResult(vector<Result2D>& result)
 {
-	// return true;
 	printer.OpenElement("frame");
 	printer.PushAttribute("number", frameCount);
 	printer.OpenElement("objectlist");
-	vector<Result2D>::iterator it;
 
-	for (it=result.begin();it<result.end();it++)
+	vector<Result2D>::iterator it;
+	for (it=result.begin();it != result.end(); it++)
 	{
+		cout << (*it).id << endl;
+		cout << (*it).yc << endl;
 		printer.OpenElement("object");
 		printer.PushAttribute("id", (*it).id);
 		printer.PushAttribute("confidence", (*it).response);
