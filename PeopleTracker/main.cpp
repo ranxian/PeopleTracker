@@ -148,7 +148,6 @@ void multiTrack(int readerType,int detectorType)
 	{
 		mTrack.doWork(frame);	
 		
-		cout << "HERE" << endl;
 		imshow("multiTrack", frame);
 
 		reader->readImg(frame);

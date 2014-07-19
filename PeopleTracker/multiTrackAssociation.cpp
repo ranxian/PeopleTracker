@@ -252,7 +252,6 @@ TrakerManager::TrakerManager(Detector* detector,Mat& frame,double thresh_promoti
 	_my_char(0),
 	_frame_count(0),
 	_tracker_count(0),
-	resultWriter(output_path.c_str()),
 	_controller(frame.size(),8,8,0.01,1/COUNT_NUM,thresh_promotion)
 {
 	pMog = new BackgroundSubtractorMOG2();

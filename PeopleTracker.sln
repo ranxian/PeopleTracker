@@ -22,8 +22,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Debug|Win32.ActiveCfg = Debug|Win32
 		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Debug|Win32.Build.0 = Debug|Win32
 		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Debug|x64.ActiveCfg = Debug|x64
@@ -36,8 +36,8 @@ Global
 		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Release|x64.ActiveCfg = Release|x64
 		{C02E0A07-F804-495F-8E07-3B7CD98F69E7}.Release|x64.Build.0 = Release|x64
 		{A0E290C0-197D-4659-A67A-D31BF9D56EAA}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{A0E290C0-197D-4659-A67A-D31BF9D56EAA}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{A0E290C0-197D-4659-A67A-D31BF9D56EAA}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{A0E290C0-197D-4659-A67A-D31BF9D56EAA}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{A0E290C0-197D-4659-A67A-D31BF9D56EAA}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{A0E290C0-197D-4659-A67A-D31BF9D56EAA}.Debug|Win32.ActiveCfg = Debug|Win32
 		{A0E290C0-197D-4659-A67A-D31BF9D56EAA}.Debug|Win32.Build.0 = Debug|Win32
 		{A0E290C0-197D-4659-A67A-D31BF9D56EAA}.Debug|x64.ActiveCfg = Debug|x64

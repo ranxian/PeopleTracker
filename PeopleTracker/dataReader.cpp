@@ -150,6 +150,7 @@ bool XMLBBoxReader::getNextFrameResult(vector<Result2D>& result)
 
 XMLBBoxWriter::XMLBBoxWriter(const char* filename):frameCount(0)
 {
+	cout << "what" << endl;
 	fopen_s(&file, filename, "w");
 	if (file == NULL) {
 		cout << "can't open file " << filename << " for write" << endl;
@@ -185,9 +186,7 @@ bool XMLBBoxWriter::putNextFrameResult(vector<Result2D>& result)
 	}
 
 	printer.CloseElement(); // end objectlist
-	cout << 6 << endl;
 	printer.CloseElement(); // end frame
-	cout << 7 << endl;
 	frameCount++;
 	return true;
 }

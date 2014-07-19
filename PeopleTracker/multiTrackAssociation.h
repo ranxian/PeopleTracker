@@ -174,7 +174,6 @@ private:
 	int _frame_count;
 	
 	Mat _occupancy_map;	
-	XMLBBoxWriter resultWriter;
 
 	double _thresh_for_expert_;
 	// Background substraction
