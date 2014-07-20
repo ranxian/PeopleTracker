@@ -25,7 +25,7 @@
 
 #ifndef _PARAMETER_
 #define _PARAMETER_
-
+#include <opencv2/opencv.hpp>
 // multi-object level tracking parameter
 extern int MAX_TRACKER_NUM;
 extern int MAX_TEMPLATE_SIZE;
@@ -43,4 +43,6 @@ extern double HOG_DETECT_FRAME_RATIO;
 extern int show_detection;
 // heatmap
 extern int HEAT_RADIUS;
+// Framesize
+extern cv::Size FRAME_SIZE;
 #endif

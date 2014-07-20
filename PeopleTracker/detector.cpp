@@ -107,8 +107,15 @@ void XMLDetector::detect(const Mat& f)
 					rectRes.x = cvRound(res.xc - 0.5*res.w);
 					rectRes.y = cvRound(res.yc - 0.5*res.h);
 
-					detection.push_back(rectRes);
-					response.push_back(confidence);
+					if (rectRes.height / (double)rectRes.width >= 1.75 
+						&& rectRes.height <= FRAME_SIZE.height*0.75
+						&& rectRes.width <= FRAME_SIZE.width*0.5) {
+						detection.push_back(rectRes);
+						response.push_back(confidence);
+					} else {
+						Point wierd(rectRes.height, rectRes.width);
+						cout << wierd << " is a wierd height width ratio, abort" << endl;
+					}
 				}
 				object = object->NextSiblingElement("object");
 			}

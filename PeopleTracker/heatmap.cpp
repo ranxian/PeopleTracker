@@ -13,7 +13,7 @@ void Heatmap::feed(vector<Result2D> &results)
 
 	for (it = results.begin(); it != results.end(); it++) {
 		Point center((*it).xc, (*it).yc + (*it).h/2);
-		circle(tempMap, center, HEAT_RADIUS, Scalar(5), -1);
+		circle(tempMap, center, HEAT_RADIUS, Scalar(20), -1);
 		GaussianBlur(tempMap, tempMap, Size(99, 99), 0);
 		densityMap += tempMap;
 		tempMap.setTo(0);

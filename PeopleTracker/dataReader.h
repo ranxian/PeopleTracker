@@ -81,7 +81,6 @@ class VideoReader:public SeqReader
 public:
 	VideoReader(const string filename):capture(filename){}
 	virtual void readImg(Mat& frame){ capture>>frame; }
-
 private:
 	VideoCapture capture;
 };

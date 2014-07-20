@@ -30,7 +30,6 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <Windows.h>
 
 #include "tracker.h"
 #include "detector.h"
@@ -55,7 +54,7 @@ double TRACKING_TO_BODYSIZE_RATIO;
 int FRAME_RATE;
 double TIME_WINDOW_SIZE;
 double HOG_DETECT_FRAME_RATIO;
-
+Size FRAME_SIZE;
 // Display set
 int show_detection = 0;
 
@@ -110,8 +109,6 @@ static void writeFrameToXml(tinyxml2::XMLPrinter &printer, vector<Result2D> &res
 
 	vector<Result2D>::iterator it;
 	for (it = results.begin(); it != results.end(); it++) {
-		cout << (*it).id << endl;
-		cout << (*it).yc << endl;
 		printer.OpenElement("object");
 		printer.PushAttribute("id", (*it).id);
 		printer.PushAttribute("confidence", (*it).response);
@@ -142,8 +139,12 @@ void multiTrack(int readerType,int detectorType)
 		reader=new ImageDataReader(_sequence_path_);
 		break;
 	case VIDEO:
-		reader=new VideoReader(_sequence_path_);
-		break;
+	{
+				  reader = new VideoReader(_sequence_path_);
+				  VideoCapture cap(_sequence_path_);
+				  FRAME_SIZE = Size((int)cap.get(CV_CAP_PROP_FRAME_WIDTH), (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT));
+				  break;
+	}
 	default:
 		cerr<<"no such reader type!"<<endl;
 		return ;
@@ -210,16 +211,19 @@ void multiTrack(int readerType,int detectorType)
 
 void playResult()
 {
-	SeqReader* reader;
 	XMLBBoxReader boxReader(_result_xml_file_.c_str());
 	vector<Result2D> result;
-
-	reader = new VideoReader(_sequence_path_);
-	cout << _sequence_path_ << endl;
+	VideoCapture cap(_sequence_path_);
+	int width = cap.get(CV_CAP_PROP_FRAME_WIDTH);
+	int height = cap.get(CV_CAP_PROP_FRAME_HEIGHT);
 	Mat frame;
+	Mat heatImg;
+	Heatmap hmap(height, width);
+	namedWindow("Result");
+	namedWindow("Heatmap");
 	while (true) {
-		reader->readImg(frame);
-		if (frame.data == NULL)
+		cap.read(frame);
+		if (frame.empty())
 			break;
 		boxReader.getNextFrameResult(result);
 		vector<Result2D>::iterator it;
@@ -228,11 +232,21 @@ void playResult()
 			Point p2((int)((*it).xc + (*it).w / 2), (int)((*it).yc + (*it).h / 2));
 			rectangle(frame, p1, p2, COLOR((*it).id), 3);
 		}
+		hmap.feed(result);
+		heatImg = hmap.getHeatImg();
+		imshow("Heatmap", heatImg);
 		imshow("Result", frame);
-		Sleep(1000 / 35.0);
+		char key;
+		key = waitKey(60);
+		if (key == 'q')
+			break;
+		switch (key) {
+		case 'p':
+			while (waitKey(0) != 'p');
+		default:
+			break;
+		}
 	}
-
-	delete reader;
 }
 
 // Turn xx.mp4 to xx
@@ -254,6 +268,7 @@ int main(int argc,char** argv)
 	int option;
 	cin >> option;
 
+	read_config();
 	if (option == 2) {
 		cout << "Make sure the video is in the Data directory" << endl
 			<< "And the detection xml is in the same directory and same base name" << endl
@@ -269,7 +284,6 @@ int main(int argc,char** argv)
 		_detection_xml_file_ = "Data\\" + baseName + ".xml";
 		result_output_xmlpath = "Data\\" + baseName + "-result.xml";
 		
-		read_config();
 		multiTrack(VIDEO, XML);
 	} else {
 		cout << "Enter video name: ";
