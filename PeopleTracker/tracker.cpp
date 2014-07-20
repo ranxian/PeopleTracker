@@ -24,7 +24,7 @@
 
 #include "tracker.h"
 
-#define SCALE_UPDATE_RATE 0.4
+#define SCALE_UPDATE_RATE 0.6
 #define HIST_MATCH_UPDATE 0.01
 
 list<EnsembleTracker*> EnsembleTracker::_TRASH_LIST;
@@ -69,18 +69,12 @@ _record_idx(0)
 {
 	_retained_template = 0;
 	//initialize kalman filter
-	_kf.transitionMatrix = *(Mat_<float>(6, 6) << 
-		1, 0, 1, 0, 0.5, 0,
+	_kf.transitionMatrix = *(Mat_<float>(6, 6) << 1, 0, 1, 0, 0.5, 0,
 		0, 1, 0, 1, 0, 0.5,
 		0, 0, 1, 0, 1, 0,
 		0, 0, 0, 1, 0, 1,
 		0, 0, 0, 0, 1, 0,
 		0, 0, 0, 0, 0, 1);
-	/*_kf.transitionMatrix = *(Mat_<float>(4, 4) <<
-		1, 0, 1, 0,
-		0, 1, 0, 1,
-		0, 0, 1, 0,
-		0, 0, 0, 1);*/
 	setIdentity(_kf.measurementMatrix);
 	updateKfCov(body_size.width);
 	setIdentity(_kf.errorCovPost, Scalar::all(3.0*(double)body_size.width*body_size.width));
@@ -179,19 +173,15 @@ void EnsembleTracker::addAppTemplate(const Mat* frame_set, Rect iniWin)
 	Size2f detection_size((float)iniWin.width, (float)iniWin.height);
 	// First to see if new window is too rediculous
 	if (_template_list.size() == 1) {
-		_window_size.width = iniWin.width;
-		_window_size.height = iniWin.height;
-		cout << "#" << _ID << " has only one template, size is " << _window_size << endl;
+		_window_size.width = (float)iniWin.width;
+		_window_size.height = (float)iniWin.height;
 	} else {
-		if (abs((float)(detection_size.width - _window_size.width)) / _window_size.width > 0.3 ||
-			abs((float)(detection_size.height - _window_size.height)) / _window_size.height > 0.3) {
+		if (abs((float)(detection_size.width - _window_size.width)) / _window_size.width > 0.2 ||
+			abs((float)(detection_size.height - _window_size.height)) / _window_size.height > 0.2) {
 			// Too rediculous, Do nothing
-			cout << "#" << _ID << " window size is too wierd, abort" << endl;
 		} else {
-			Size before = _window_size;
 			_window_size.width = (float)(_window_size.width*(1 - SCALE_UPDATE_RATE) + detection_size.width*SCALE_UPDATE_RATE);
 			_window_size.height = (float)(_window_size.height*(1 - SCALE_UPDATE_RATE) + detection_size.height*SCALE_UPDATE_RATE);
-			cout << "#" << _ID << " window resize from " << before << " to " << _window_size << endl;
 		}
 	}
 	// iniWin.width / _window_size.width
@@ -285,9 +275,15 @@ void EnsembleTracker::track(const Mat* frame_set, Mat& occ_map)
 		(int)_window_size.height);
 	Rect before = iniWin;
 
-
+#ifdef DEBUG
+	cout << "Center of CM is at (" << iniWin.tl().x << "," << iniWin.tl().y << ")" << endl;
+	cout << "Before shift (" << (iniWin + Point(_cm_win.x, _cm_win.y)).x << "," << (iniWin + Point(_cm_win.x, _cm_win.y)).y << ")" << endl;
+#endif
 	meanShift(_confidence_map, iniWin, TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1));
-
+#ifdef DEBUG
+	cout << "After shift (" << (iniWin + Point(_cm_win.x, _cm_win.y)).x << "," << (iniWin + Point(_cm_win.x, _cm_win.y)).y << ")" << endl;
+	cout << "Y changed: " << iniWin.y - before.y << endl;
+#endif
 
 	// locate the result window in the picture and update the body-size window too 
 	// Rect beforeRes = _result_temp;
@@ -335,20 +331,26 @@ void EnsembleTracker::deletePoorTemplate(double threshold)
 				delete _retained_template;
 				_retained_template = tr;
 				it = _template_list.erase(it);
-				// cout << "Tracker #"  <<_ID << " template deleted" << endl;
+#ifdef DEBUG
+				cout << "template deleted" << endl;
+#endif
 				continue;
 			}
 			delete tr;
 			it = _template_list.erase(it);
-			// cout << "Tracker #" << _ID << " template deleted" << endl;
+#ifdef DEBUG
+			cout << "template deleted" << endl;
+#endif
 		} else
 			it++;
 	}
 }
 void EnsembleTracker::deletePoorestTemplate()
 {
-	delete _template_list.back();
-	_template_list.pop_back();
+	if (_template_list.size() >= 1) {
+		delete _template_list.back();
+		_template_list.pop_back();
+	}
 }
 void EnsembleTracker::demote()
 {
@@ -374,12 +376,7 @@ void EnsembleTracker::updateMatchHist(Mat& frame)
 	Mat roi(frame, win);
 	Mat temp;
 	Mat mask_win = Mat::zeros(roi.size(), CV_8UC1);
-	ellipse(mask_win, 
-			Point((int)(0.5*mask_win.cols), 
-				  (int)(0.5*mask_win.rows)), 
-		    Size((int)(0.35*mask_win.cols), 
-			(int)(0.35*mask_win.rows)), 
-			0, 0, 360, Scalar(1), -1);
+	ellipse(mask_win, Point((int)(0.5*mask_win.cols), (int)(0.5*mask_win.rows)), Size((int)(0.35*mask_win.cols), (int)(0.35*mask_win.rows)), 0, 0, 360, Scalar(1), -1);
 	calcHist(&roi, 1, channels, mask_win, temp, 3, histSize, hRange);
 	normalize(temp, temp, 1, 0, NORM_L1);
 	if (_result_history.size() == 1) {
