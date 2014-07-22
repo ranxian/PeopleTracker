@@ -233,8 +233,7 @@ void playResult()
 			rectangle(frame, p1, p2, COLOR((*it).id), 3);
 		}
 		hmap.feed(result);
-		heatImg = hmap.getHeatImg();
-		imshow("Heatmap", heatImg);
+		hmap.drawHeatImg(frame);
 		imshow("Result", frame);
 		char key;
 		key = waitKey(60);

@@ -491,6 +491,7 @@ void TrakerManager::doWork(Mat& frame)
 
 	// register results and draw
 	vector<Result2D> output;
+	vector<Result2D> good_output;
 	for (list<EnsembleTracker*>::iterator i = _tracker_list.begin(); i != _tracker_list.end(); i++) {
 		(*i)->registerTrackResult();//record the final output!!!
 		if (!(*i)->getIsNovice()) {
@@ -517,6 +518,10 @@ void TrakerManager::doWork(Mat& frame)
 				Size expand_size((int)(scale*win.width + 0.5), (int)(scale*win.height + 0.5));
 				win = win + expand_size - Point((int)(0.5*scale*win.width + 0.5), (int)(0.5*scale*win.height + 0.5));
 				output.push_back(Result2D((*i)->getID(), (float)(win.x + 0.5*win.width), (float)(win.y + 0.5*win.height), (float)win.width, (float)win.height));
+				if (!(*i)->getIsNovice()) {
+					good_output.push_back(Result2D((*i)->getID(), (float)(win.x + 0.5*win.width), (float)(win.y + 0.5*win.height), (float)win.width, (float)win.height));
+				}
+
 			}
 		}
 		// draw matching radius
@@ -529,9 +534,8 @@ void TrakerManager::doWork(Mat& frame)
 	_currentFrameResult = output;
 
 	// feed to heatMap
-	heatmap.feed(output);
-	Mat heatImg = heatmap.getHeatImg();
-	imshow("heat", heatImg);
+	heatmap.feed(good_output);
+	heatmap.drawHeatImg(frame);
 
 	// detect face
 	face_detector.detect(frame);
