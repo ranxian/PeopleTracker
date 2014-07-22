@@ -114,6 +114,7 @@ private:
 	txml::XMLElement *frame;
 	const char *temp; 
 	bool open_success;
+	int frameCount;
 };
 #define ENCODING "UTF-8"
 // XMLBBoxWriter - write boxes to a xml files
