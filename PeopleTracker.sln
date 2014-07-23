@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAnalyse", "DataAnalyse\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataProcess", "DataProcess\DataProcess.vcxproj", "{03BFEE8F-CA53-4EF9-BAC3-276E1F86A269}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorBasics-D2D", "ColorBasics-D2D\ColorBasics-D2D.vcxproj", "{DEC1A972-B6F4-4563-A60C-F09B338335A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,20 @@ Global
 		{03BFEE8F-CA53-4EF9-BAC3-276E1F86A269}.Release|Win32.ActiveCfg = Release|Win32
 		{03BFEE8F-CA53-4EF9-BAC3-276E1F86A269}.Release|Win32.Build.0 = Release|Win32
 		{03BFEE8F-CA53-4EF9-BAC3-276E1F86A269}.Release|x64.ActiveCfg = Release|Win32
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Debug|Win32.Build.0 = Debug|Win32
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Debug|x64.ActiveCfg = Debug|x64
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Debug|x64.Build.0 = Debug|x64
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Release|Any CPU.ActiveCfg = Release|Win32
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Release|Win32.ActiveCfg = Release|Win32
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Release|Win32.Build.0 = Release|Win32
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Release|x64.ActiveCfg = Release|x64
+		{DEC1A972-B6F4-4563-A60C-F09B338335A2}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

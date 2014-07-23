@@ -172,7 +172,7 @@ void multiTrack(int readerType,int detectorType)
 
 	TrakerManager mTrack(detector, frame, EXPERT_THRESH);
 	VideoWriter writer;
-	writer.open("Data\\result.mpg", CV_FOURCC('X', 'V', 'I', 'D'), 20, 
+	writer.open("tracker\\result.mpg", CV_FOURCC('X', 'V', 'I', 'D'), 20, 
 				Size(frame.cols, frame.rows));
 	FILE *file = fopen(result_output_xmlpath.c_str(), "w");
 	
@@ -279,17 +279,17 @@ int main(int argc,char** argv)
 		string videoName;
 		cin >> videoName;
 		string baseName = getBaseName(videoName);
-		_sequence_path_ = "Data\\" + videoName;
-		_detection_xml_file_ = "Data\\" + baseName + ".xml";
-		result_output_xmlpath = "Data\\" + baseName + "-result.xml";
+		_sequence_path_ = "tracker\\" + videoName;
+		_detection_xml_file_ = "tracker\\" + baseName + ".xml";
+		result_output_xmlpath = "tracker\\" + baseName + "-result.xml";
 		
 		multiTrack(VIDEO, XML);
 	} else {
 		cout << "Enter video name: ";
 		string videoName;
 		cin >> videoName;
-		_sequence_path_ = "Data\\" + videoName;
-		_result_xml_file_ = "Data\\" + getBaseName(videoName) + "-result.xml";
+		_sequence_path_ = "tracker\\" + videoName;
+		_result_xml_file_ = "tracker\\" + getBaseName(videoName) + "-result.xml";
 		cout << _result_xml_file_ << endl;
 		playResult();
 	}
