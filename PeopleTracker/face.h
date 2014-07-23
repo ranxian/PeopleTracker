@@ -2,6 +2,7 @@
 #define _FACE_H
 #include "opencv2/opencv.hpp"
 #include "detector.h"
+#include <pittpatt_common.h>
 
 class FaceDetector : public Detector
 {
