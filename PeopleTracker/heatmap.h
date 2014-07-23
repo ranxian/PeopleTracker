@@ -10,7 +10,7 @@ public:
 	Heatmap(int _width, int _height);
 	Heatmap(){};
 	Mat getHeatImg();
-	void drawHeapImg(Mat &frame);
+	void drawHeatImg(Mat &frame);
 	void feed(vector<Result2D> &results);
 	int RADIUS;
 private:
@@ -18,6 +18,7 @@ private:
 	Mat tempMap;
 	int width;
 	int height;
+	void overlayImg(const cv::Mat &bg, const cv::Mat &fg, cv::Mat &result, cv::Point2i &location);
 };
 
 #endif

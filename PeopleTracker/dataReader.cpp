@@ -105,14 +105,19 @@ XMLBBoxReader::XMLBBoxReader(const char* filename)
 			frame = frame->FirstChildElement("frame");
 		}
 	}			
+	frameCount = 1;
 }
 bool XMLBBoxReader::getNextFrameResult(vector<Result2D>& result)
 {
-	bool r = false;
 	result.clear();
 	if (frame != NULL)
 	{
-		r = true; //get the successive frame
+		temp = frame->Attribute("number");
+		int frameNumber = string2int(temp);
+		if (frameNumber > frameCount) {
+			frameCount += 1;
+			return false;
+		}
 
 		txml::XMLElement *objectList = frame->FirstChildElement("objectlist");
 		if (objectList != NULL)
@@ -143,7 +148,8 @@ bool XMLBBoxReader::getNextFrameResult(vector<Result2D>& result)
 		frame = frame->NextSiblingElement("frame");
 	}
 	
-	return r;
+	frameCount += 1;
+	return true;
 }	
 
 /* ****** ****** */
