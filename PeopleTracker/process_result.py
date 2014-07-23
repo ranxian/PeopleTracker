@@ -10,6 +10,7 @@ class Processor:
 		self.root = self.tree.getroot()
 		self.frame_set = {}
 		self.object_set = {}
+		self.kernel_size = 10
 
 	def process(self):
 		self.create_database()
@@ -64,7 +65,7 @@ class Processor:
 			obj = self.object_set[obj_id]
 			boxes = []
 			result = []
-			boxes = [obj.get(i+1) for i in range(5)]
+			boxes = [obj.get(i+1) for i in range(self.kernel_size)]
 			for i in range(self.nframe):
 				if not obj.get(i+1) == None:
 					cur_box = obj.get(i+1)
@@ -87,7 +88,7 @@ class Processor:
 				else:
 					result.append(None)
 				del boxes[0]
-				boxes.append(obj.get(i+6))
+				boxes.append(obj.get(i+1+self.kernel_size))
 			obj = {}
 			for idx, box in enumerate(result):
 				if box != None:
