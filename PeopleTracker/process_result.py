@@ -14,7 +14,9 @@ class Processor:
 
 	def process(self):
 		self.create_database()
-		self.smooth()
+		self.denoise()
+		self.smooth_boxsize()
+		self.smooth_trackpos()
 		new_root = self.formtree()
 		new_root.write(self.output_path)
 
@@ -30,27 +32,24 @@ class Processor:
 				if self.object_set.get(obj_id) == None:
 					self.object_set[obj_id] = {}
 				self.object_set[obj_id][frame_number] = box.attrib
-				#if self.frame_set.get(frame_number) == None:
-				#	self.frame_set[frame_number] = {}
-				#self.frame_set[frame_number][obj_id] = box.attrib
+	
+	def calc_mean(self, numbers):
+		to_calc = [number for number in numbers if number != None]
+		total = reduce(lambda x, y: x + y, to_calc)
+		return float(total) / len(to_calc)
 
-	def smooth(self):
-		def calc_mean(numbers):
-			total = reduce(lambda x, y: x + y, numbers)
-			return float(total) / len(numbers)
+	def calc_var(self, numbers):
+		to_calc = [number for number in numbers if number != None]
+		if len(to_calc) == 1:
+			return 0
+		mean = self.calc_mean(to_calc)
+		total = reduce(lambda x, y: x + (y-mean)*(y-mean), to_calc) 
+		return total / (len(to_calc)-1)
 
-		def calc_var(numbers):
-			if len(numbers) == 1:
-				return 0
-			mean = calc_mean(numbers)
-			total = reduce(lambda x, y: x + (y-mean)*(y-mean), numbers) 
-			return total / (len(numbers)-1)
-
-		EMPTY_BOX = {'w': 0, 'h': 0, 'xc': 0, 'yc': 0}
-
+	def denoise(self):
 		frame_counts = map(lambda key: len(self.object_set[key]), self.object_set.keys())
-		mean = calc_mean(frame_counts)
-		var = calc_var(frame_counts)
+		mean = self.calc_mean(frame_counts)
+		var = self.calc_var(frame_counts)
 
 		# Delete object with very few frames
 		ndelete = 0
@@ -59,6 +58,9 @@ class Processor:
 				del self.object_set[obj_id]
 				ndelete += 1
 		print ndelete, 'deleted'
+
+	def smooth_boxsize(self):
+		EMPTY_BOX = {'w': 0, 'h': 0, 'xc': 0, 'yc': 0}
 
 		# Smooth
 		for obj_id in self.object_set.keys():
@@ -83,6 +85,41 @@ class Processor:
 						w_m /= n
 						h_m /= n
 						result.append({'xc': cur_box['xc'], 'yc': cur_box['yc'], 'w': str(w_m), 'h': str(h_m)})
+					else:
+						result.append(cur_box)
+				else:
+					result.append(None)
+				del boxes[0]
+				boxes.append(obj.get(i+1+self.kernel_size))
+			obj = {}
+			for idx, box in enumerate(result):
+				if box != None:
+					obj[idx+1] = box
+			self.object_set[obj_id] = obj
+
+	def smooth_trackpos(self):
+		for obj_id in self.object_set.keys():
+			obj = self.object_set[obj_id]
+			boxes = []
+			result = []
+			boxes = [obj.get(i+1) for i in range(self.kernel_size)]
+			for i in range(self.nframe):
+				if not obj.get(i+1) == None:
+					cur_box = obj.get(i+1)
+					xc_m = 0
+					yc_m = 0
+					n = 0
+					for box in boxes:
+						if box == None:
+							continue
+						else:
+							xc_m += float(box['xc'])
+							yc_m += float(box['yc'])
+							n += 1
+					if n > 1:
+						xc_m /= n
+						yc_m /= n
+						result.append({'xc': str(xc_m), 'yc': str(yc_m), 'w': cur_box['w'], 'h': cur_box['h']})
 					else:
 						result.append(cur_box)
 				else:
