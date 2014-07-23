@@ -81,6 +81,28 @@ namespace DataAnalyse
             reader.Close();
         }
 
+        public static List<float> ExtractLeftElbowAngleFeature()
+        {
+            List<Frame> list = new List<Frame>();
+            GetSourceData(list);
+            List<float> featureList = new List<float>();
+            foreach (Frame frame in list)
+            {
+                if (frame.List.Count > 0)
+                {
+                    float angle = frame.List[5].angle(frame.List[4], frame.List[6]);
+                    // Console.WriteLine(angle);
+                    if (angle >= 0f && angle <= 4)
+                        featureList.Add(angle);
+                }
+                else
+                {
+                    featureList.Add(float.MaxValue);
+                }
+            }
+            return featureList;
+        }
+
         public static List<float> ExtractRightElbowAngleFeature()
         {
             List<Frame> list = new List<Frame>();

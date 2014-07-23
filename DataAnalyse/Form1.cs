@@ -19,6 +19,7 @@ namespace DataAnalyse
             buttonList.Add(button1);
             buttonList.Add(button2);
             buttonList.Add(button3);
+            buttonList.Add(button4);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -47,6 +48,11 @@ namespace DataAnalyse
         private void button3_Click(object sender, EventArgs e)
         {
             this.myPanel1.SetList(2, (myPanel1.LList[2] == null)?DataProcess.ExtractHeadAngleFeature() : null);
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            this.myPanel1.SetList(3, (myPanel1.LList[3] == null) ? DataProcess.ExtractLeftElbowAngleFeature() : null);
         }
     }
 }
