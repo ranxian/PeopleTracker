@@ -30,8 +30,8 @@
 class CSkeletonBasics
 {
 
-	const char* skeleton_out = "F:\\summer\\kinect\\data.txt";
-	const char* video_out = "F:\\summer\\kinect\\video.avi";
+	const char* skeleton_out = "D:\\work\\Kinect\\Repos\\PeopleTracker\\Workspace\\data.txt";
+	const char* video_out = "D:\\work\\Kinect\\Repos\\PeopleTracker\\Workspace\\video.avi";
 
     static const int        cScreenWidth  = 320;
     static const int        cScreenHeight = 240;
