@@ -539,7 +539,7 @@ void TrakerManager::doWork(Mat& frame)
 
 	// detect face
 	face_detector.detect(frame);
-	face_detector.draw(frame);
+	face_detector.drawDetection(frame);
 
 	// screen shot
 	if (_my_char == 'g') {

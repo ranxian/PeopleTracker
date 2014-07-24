@@ -168,6 +168,13 @@
     <ClCompile Include="munkres.cpp" />
     <ClCompile Include="tinyxml2.cpp" />
     <ClCompile Include="tracker.cpp" />
+    <ClCompile Include="utilities\sdk_cmd_line.c" />
+    <ClCompile Include="utilities\sdk_cmd_line_utils.c" />
+    <ClCompile Include="utilities\sdk_draw_utils.c" />
+    <ClCompile Include="utilities\sdk_io_utils.c" />
+    <ClCompile Include="utilities\sdk_print_utils.c" />
+    <ClCompile Include="utilities\sdk_profile_timers.c" />
+    <ClCompile Include="utilities\sdk_utils.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appTemplate.h" />
@@ -183,6 +190,15 @@
     <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="tracker.h" />
     <ClInclude Include="util.h" />
+    <ClInclude Include="utilities\sdk_cmd_line.h" />
+    <ClInclude Include="utilities\sdk_cmd_line_utils.h" />
+    <ClInclude Include="utilities\sdk_draw_utils.h" />
+    <ClInclude Include="utilities\sdk_draw_utils_charset.h" />
+    <ClInclude Include="utilities\sdk_io_utils.h" />
+    <ClInclude Include="utilities\sdk_print_utils.h" />
+    <ClInclude Include="utilities\sdk_profile_timers.h" />
+    <ClInclude Include="utilities\sdk_utilities.h" />
+    <ClInclude Include="utilities\sdk_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.txt" />

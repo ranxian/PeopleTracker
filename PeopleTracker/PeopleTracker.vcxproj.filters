@@ -19,6 +19,9 @@
     <Filter Include="Docs">
       <UniqueIdentifier>{f9a5367a-e1e5-4bf2-87e2-cd93ecbd704b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{b58cb1b3-8877-45cb-b890-14a8f20a637a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="munkres.cpp">
@@ -50,6 +53,27 @@
     </ClCompile>
     <ClCompile Include="tinyxml2.cpp">
       <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\sdk_cmd_line.c">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\sdk_cmd_line_utils.c">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\sdk_draw_utils.c">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\sdk_io_utils.c">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\sdk_print_utils.c">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\sdk_profile_timers.c">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\sdk_utils.c">
+      <Filter>Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +115,33 @@
     </ClInclude>
     <ClInclude Include="tinyxml2.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sdk_cmd_line.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sdk_cmd_line_utils.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sdk_draw_utils.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sdk_draw_utils_charset.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sdk_io_utils.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sdk_print_utils.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sdk_profile_timers.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sdk_utilities.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sdk_utils.h">
+      <Filter>Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

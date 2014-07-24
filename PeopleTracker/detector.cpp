@@ -49,10 +49,9 @@ XMLDetector::XMLDetector(const char* filename):Detector(XML)
 	int r = file.LoadFile(filename);
 	// file=xmlReadFile(filename,"UTF-8",XML_PARSE_RECOVER);
 	if (r != 0) {
-		cout << "fail to open" << endl;
+		cout << "fail to open file: " << filename << endl;
 		open_success = false;
-	}
-	else {
+	} else {
 		open_success = true;
 		frame = file.RootElement();
 		if (frame == NULL) {
@@ -71,6 +70,9 @@ XMLDetector::XMLDetector(const char* filename):Detector(XML)
 
 void XMLDetector::detect(const Mat& f)
 {
+	if (!open_success)
+		return;
+
 	detection.clear();
 	response.clear();
 	bool r = false;
