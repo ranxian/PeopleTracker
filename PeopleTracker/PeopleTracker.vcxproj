@@ -190,6 +190,7 @@
     <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="tracker.h" />
     <ClInclude Include="util.h" />
+    <ClInclude Include="utilities\models_path.h" />
     <ClInclude Include="utilities\sdk_cmd_line.h" />
     <ClInclude Include="utilities\sdk_cmd_line_utils.h" />
     <ClInclude Include="utilities\sdk_draw_utils.h" />

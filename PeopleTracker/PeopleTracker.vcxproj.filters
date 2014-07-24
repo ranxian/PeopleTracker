@@ -143,6 +143,9 @@
     <ClInclude Include="utilities\sdk_utils.h">
       <Filter>Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="utilities\models_path.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="config.txt.example">
