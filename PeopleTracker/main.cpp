@@ -171,9 +171,6 @@ void multiTrack(int readerType,int detectorType)
 	}
 
 	TrakerManager mTrack(detector, frame, EXPERT_THRESH);
-	VideoWriter writer;
-	writer.open("tracker\\result.mpg", CV_FOURCC('X', 'V', 'I', 'D'), 20, 
-				Size(frame.cols, frame.rows));
 	FILE *file = fopen(result_output_xmlpath.c_str(), "w");
 	
 	tinyxml2::XMLPrinter printer(file);
@@ -189,7 +186,6 @@ void multiTrack(int readerType,int detectorType)
 
 		writeFrameToXml(printer, mTrack.getCurrentFrameResult());
 		reader->readImg(frame);
-		writer.write(frame);
 
 		char c = waitKey(1);
 		if(c == 'q') break;
