@@ -23,6 +23,7 @@
 #include "resource.h"
 #include "ImageRenderer.h"
 #include "NuiApi.h"
+#include <algorithm>
 
 #include <opencv2/core/core.hpp>        // Basic OpenCV structures (cv::Mat)
 #include <opencv2/highgui/highgui.hpp>  // Video write

@@ -396,6 +396,14 @@ void CSkeletonBasics::ProcessSkeleton()
 	if (LockedRect.Pitch != 0)
 	{
 		memcpy(image, LockedRect.pBits, cColorWidth *cColorHeight * 4);
+		for (int r = 0; r < cColorHeight; ++r)
+		{
+			int *p_h = (int *)(image + 4 * r);
+			for (int c = 0; c < cColorWidth / 2; ++c)
+			{
+				std::swap(*p_h, *(p_h + cColorWidth - 1 - c));
+			}
+		}
 	}
 	texture->UnlockRect(0);
 	m_pNuiSensor->NuiImageStreamReleaseFrame(m_pImageStreamHandle, &imageFrame);
