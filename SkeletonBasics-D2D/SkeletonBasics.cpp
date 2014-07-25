@@ -375,7 +375,7 @@ void CSkeletonBasics::ProcessSkeleton()
 			for (int j = 0; j < NUI_SKELETON_POSITION_COUNT; ++j)
 			{
 				Vector4 vec = skeletonFrame.SkeletonData[i].SkeletonPositions[j];
-				fprintf(fout, "%f %f %f %f\n", vec.x, vec.y, vec.z, vec.w);
+				fprintf(fout, "%f %f %f %d\n", vec.x, vec.y, vec.z, skeletonFrame.SkeletonData[i].eSkeletonPositionTrackingState[j]);
 
 			}
 		}
