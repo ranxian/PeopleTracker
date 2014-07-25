@@ -190,6 +190,8 @@ private:
 
 	// Face Detector
 	FaceDetector face_detector;
+
+	bool show_face;
 };
 	
 

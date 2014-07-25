@@ -193,9 +193,9 @@ void multiTrack(int readerType,int detectorType)
 			cvWaitKey(0);
 		} else if (c == 'd') {
 			show_detection = !show_detection;
-		} else if(c != -1)
-		{
+		} else if (c != -1) {
 			mTrack.setKey(c);
+			cout << "set " << c << endl;
 		}
 	}
 

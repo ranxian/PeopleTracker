@@ -62,6 +62,9 @@ CSkeletonBasics::CSkeletonBasics() :
 {
     ZeroMemory(m_Points,sizeof(m_Points));
 	outputVideo.open(video_out, -1, fps, cv::Size(cColorWidth, cColorHeight));
+	FILE *file = fopen("log.txt", "w");
+	fprintf(file, "%s\n%d\n", video_out, outputVideo.isOpened());
+	fclose(file);
 }
 
 /// <summary>

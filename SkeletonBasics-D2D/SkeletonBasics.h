@@ -31,7 +31,7 @@ class CSkeletonBasics
 {
 
 	const char* skeleton_out = "kinect\\data.txt";
-	const char* video_out = "kinect\\video.mp4";
+	const char* video_out = "kinect\\video.avi";
 
     static const int        cScreenWidth  = 320;
     static const int        cScreenHeight = 240;

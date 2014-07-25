@@ -234,6 +234,7 @@ _controller(frame.size(), 8, 8, 0.01, 1 / COUNT_NUM, thresh_promotion)
 {
 	pMog = new BackgroundSubtractorMOG2();
 	heatmap = Heatmap(frame.rows, frame.cols);
+	show_face = false;
 }
 TrakerManager::~TrakerManager()
 {
@@ -525,7 +526,8 @@ void TrakerManager::doWork(Mat& frame)
 			}
 		}
 		// draw matching radius
-		// (*i)->drawAssRadius(frame);
+		// if (show_detection)
+		// 	(*i)->drawAssRadius(frame);
 	}
 
 	// sort trackers based on number of templates
@@ -539,7 +541,8 @@ void TrakerManager::doWork(Mat& frame)
 
 	// detect face
 	face_detector.detect(frame);
-	face_detector.drawDetection(frame);
+	if (show_face)
+		face_detector.drawDetection(frame);
 
 	// screen shot
 	if (_my_char == 'g') {
@@ -547,6 +550,9 @@ void TrakerManager::doWork(Mat& frame)
 		sprintf(buff, "%d.jpg", _frame_count);
 		string filename = buff;
 		imwrite(filename, frame);
+		_my_char = 0;
+	} else if (_my_char == 'f') {
+		show_face = !show_face;
 		_my_char = 0;
 	}
 
