@@ -396,12 +396,13 @@ void CSkeletonBasics::ProcessSkeleton()
 	if (LockedRect.Pitch != 0)
 	{
 		memcpy(image, LockedRect.pBits, cColorWidth *cColorHeight * 4);
+		
 		for (int r = 0; r < cColorHeight; ++r)
 		{
-			int *p_h = (int *)(image + 4 * r);
+			int *p_h = (int *)(image + r);
 			for (int c = 0; c < cColorWidth / 2; ++c)
 			{
-				std::swap(*p_h, *(p_h + cColorWidth - 1 - c));
+				std::swap(*(p_h + c), *(p_h + cColorWidth - 1 - c));
 			}
 		}
 	}
@@ -576,7 +577,7 @@ D2D1_POINT_2F CSkeletonBasics::SkeletonToScreen(Vector4 skeletonPoint, int width
     // NuiTransformSkeletonToDepthImage returns coordinates in NUI_IMAGE_RESOLUTION_320x240 space
     NuiTransformSkeletonToDepthImage(skeletonPoint, &x, &y, &depth);
 
-    float screenPointX = static_cast<float>(x * width) / cScreenWidth;
+    float screenPointX = width - static_cast<float>(x * width) / cScreenWidth;
     float screenPointY = static_cast<float>(y * height) / cScreenHeight;
 
     return D2D1::Point2F(screenPointX, screenPointY);

@@ -107,7 +107,7 @@ private:
 	HANDLE                  m_hNextImageEvent;
 
 	// Image
-	BYTE image[cColorWidth][cColorHeight][4];
+	BYTE image[cColorHeight][cColorWidth][4];
 	ID2D1Bitmap *m_pBitmap;
 
 	// Recorder
