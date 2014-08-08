@@ -29,7 +29,7 @@
 #include <list>
 
 #include <opencv2/opencv.hpp>
-
+#include "face.h"
 #include "appTemplate.h"
 #include "parameter.h"
 #include "util.h"
@@ -177,6 +177,7 @@ private:
 
 	double _phi1_, _phi2_, _phi_max_;// system parameters
 
+	// This id is also useful for face recognition task.
 	int _ID;
 	bool _is_novice;
 	int _novice_status_count;//cout the consecutive times being a novice
@@ -209,7 +210,8 @@ private:
 	int _record_idx;
 
 	vector<Point> trajectory;
+
+	// Faces that is considered to be for this tracker
+	vector<int> faceIds;
 };
-
-
 #endif
