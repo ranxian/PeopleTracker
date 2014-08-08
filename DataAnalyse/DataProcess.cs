@@ -10,12 +10,14 @@ namespace DataAnalyse
     public struct Vector3
     {
         public float x, y, z;
+        public int r;
 
-        public Vector3(float x = 0, float y = 0, float z = 0)
+        public Vector3(float x = 0, float y = 0, float z = 0, int r = 0)
         {
             this.x = x;
             this.y = y;
             this.z = z;
+            this.r = r;
         }
 
         public float Dis
@@ -70,6 +72,7 @@ namespace DataAnalyse
                         v.x = float.Parse(splits[0]);
                         v.y = float.Parse(splits[1]);
                         v.z = float.Parse(splits[2]);
+                        v.r = int.Parse(splits[3]);
                         frame.List.Add(v);
                         ++i;
                         str = reader.ReadLine();
@@ -91,9 +94,12 @@ namespace DataAnalyse
                 if (frame.List.Count > 0)
                 {
                     float angle = frame.List[5].angle(frame.List[4], frame.List[6]);
+                    int reliabilty = frame.List[5].r + frame.List[4].r + frame.List[6].r;
                     // Console.WriteLine(angle);
-                    if (angle >= 0f && angle <= 4)
+                    if (angle >= 0f && angle <= 4 && reliabilty >= 6)
                         featureList.Add(angle);
+                    else
+                        featureList.Add(float.MaxValue);
                 }
                 else
                 {
@@ -113,38 +119,53 @@ namespace DataAnalyse
                 if (frame.List.Count > 0)
                 {
                     float angle = frame.List[9].angle(frame.List[8], frame.List[10]);
+                    int reliabilty = frame.List[9].r + frame.List[8].r + frame.List[10].r;
                     // Console.WriteLine(angle);
-                    if (angle >= 0f && angle <= 4)
+                    
+                    if (angle >= 0f && angle <= 4 && reliabilty >= 6)
                         featureList.Add(angle);
+                    else
+                        featureList.Add(float.MaxValue);
                 }
                 else
                 {
                     featureList.Add(float.MaxValue);
                 }
             }
+            featureList = ListWithextremum.smooth(featureList);
             return featureList;
         }
 
-        public static List<float> ExtractPositionFeature()
+        public static List<float> ExtractPositionFeature(Boolean ignoreZ = false)
         {
             List<Frame> list = new List<Frame>();
             GetSourceData(list);
             List<float> featureList = new List<float>();
-            Frame lastFrame = null;
-            foreach (Frame frame in list)
+            for (int i=0;i<list.Count;++i)
             {
-                if (lastFrame != null && lastFrame.List.Count > 0 && frame.List.Count > 0)
+                float minV = float.MaxValue;
+                if (list[i].List.Count > 0)
                 {
-                    float feature = (frame.List[0] - lastFrame.List[0]).Dis;
-                    feature = Math.Min(feature, 0.1f);
-                    featureList.Add(feature);
+                    for (int j = -10; j < 0; ++j)
+                    {
+                        if (i + j >= 0 && list[i + j].List.Count > 0 && list[i + j].List[0].r >= 2)
+                        {
+                            Vector3 disVec = list[i].List[0] - list[i + j].List[0];
+                            if (ignoreZ)
+                            {
+                                disVec.z = 0;
+                            }
+                            minV = Math.Min(minV, disVec.Dis);
+                        }
+                    }
                 }
-                else
+                if (minV != float.MaxValue)
                 {
-                    featureList.Add(float.MaxValue);
+                    minV = Math.Min(minV, 0.05f);
                 }
-                lastFrame = frame;
+                featureList.Add(minV);
             }
+            featureList = ListWithextremum.smooth(featureList);
             return featureList;
         }
 
@@ -153,15 +174,17 @@ namespace DataAnalyse
             List<Frame> list = new List<Frame>();
             GetSourceData(list);
             List<float> featureList = new List<float>();
-            Frame lastFrame = null;
             foreach (Frame frame in list)
             {
                 if (frame.List.Count > 0)
                 {
                     float angle = frame.List[2].angle(frame.List[1], frame.List[3]);
                     // Console.WriteLine(angle);
-                    if (angle >= 0f && angle <= 4)
+                    int reliability = frame.List[2].r + frame.List[1].r + frame.List[3].r;
+                    if (angle >= 0f && angle <= 4 && reliability >= 0)
                         featureList.Add(angle);
+                    else
+                        featureList.Add(float.MaxValue);
                 }
                 else
                 {

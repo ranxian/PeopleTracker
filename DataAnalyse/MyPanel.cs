@@ -75,7 +75,8 @@ namespace DataAnalyse
         protected override void OnSizeChanged(EventArgs e)
         {
             base.OnSizeChanged(e);
-            dataBitmap = new Bitmap(this.Width, this.Height);
+            dataBitmap = new Bitmap(Math.Max(1,this.Width), Math.Max(1,this.Height));
+            //Console.WriteLine(this.Width + " " + this.Height);
             reDrawData = true;
             Invalidate();
         }
@@ -136,7 +137,7 @@ namespace DataAnalyse
                         else
                         {
                             y = 0;
-                            //g.FillRectangle(new SolidBrush(Color.Blue), x, y, w * (i + 1) / list.Count - x, h);
+                            g.FillRectangle(new SolidBrush(Color.Blue), x, y, w * (i + 1) / list.Count - x, h);
                         }
                     }
                     GraphicsPath path = new GraphicsPath();

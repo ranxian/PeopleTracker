@@ -1,19 +1,37 @@
 #include "DataProcess.h"
 #include <cmath>
+#include <algorithm>
 
 float calc_right_elbow_angle(const PeopleType &people)
 {
-	return people.node[9].angle(people.node[8], people.node[10]);
+	int r = people.node[9].r + people.node[8].r + people.node[10].r;
+	if (r >= 6)
+	{
+		return people.node[9].angle(people.node[8], people.node[10]);
+	}
+	else
+	{
+		return invalid_value;
+	}
 }
 
 float calc_left_elbow_angle(const PeopleType &people)
 {
-	return people.node[5].angle(people.node[4], people.node[6]);
+	int r = people.node[5].r + people.node[4].r + people.node[6].r;
+	if (r >= 6)
+	{
+		return people.node[5].angle(people.node[4], people.node[6]);
+	}
+	else
+	{
+		return invalid_value;
+	}
 }
+
 
 struct Feature
 {
-	float left_elbow, right_elbow;
+	float left_elbow, right_elbow, distance;
 };
 
 struct FeatureInfo
@@ -21,23 +39,56 @@ struct FeatureInfo
 	int illegalFrames, startFrame;
 };
 
-
-vector<MotionInterval> DataProcess::analyze_data(const vector<FrameType> &frames)
+vector< vector<Feature> > get_feature_list(const vector<FrameType> &frames)
 {
-	vector<MotionInterval> ret;
 	vector< vector<Feature> > featureList;
+	vector< const PeopleType *> lastValidFrame;
+
+	int maxPeople = 0;
+	for (auto p = frames.begin(); p != frames.end(); ++p)
+	{
+		maxPeople = max(maxPeople, (int)p->people.size());
+	}
+
+	for (int i = 0; i < maxPeople; ++i)
+	{
+		lastValidFrame.push_back(nullptr);
+	}
+
 	for (auto p = frames.begin(); p != frames.end(); ++p)
 	{
 		vector<Feature> features;
-		for (auto q = p->people.begin(); q != p->people.end(); ++q)
+		for (size_t i = 0; i<p->people.size();++i)
 		{
+			const auto &person = p->people[i];
 			Feature feature;
-			feature.left_elbow = calc_left_elbow_angle(*q);
-			feature.right_elbow = calc_right_elbow_angle(*q);
+			feature.left_elbow = calc_left_elbow_angle(person);
+			feature.right_elbow = calc_right_elbow_angle(person);
+			auto q = p;
+			float vMin = invalid_value;
+			if (p->people[i].tracked)
+			{
+				for (int count = 0; q >= frames.begin() && count < 10; q--, count++)
+				if (q->people.size() > i && q->people[i].tracked)
+				{
+					NodeType nodeDiff = p->people[i].node[0] - q->people[i].node[0];
+					nodeDiff.z = 0;
+					vMin = min(vMin, nodeDiff.dis());
+				}
+			}
+			feature.distance = vMin;
 			features.push_back(feature);
 		}
 		featureList.push_back(features);
 	}
+	return featureList;
+}
+
+
+vector<MotionInterval> DataProcess::analyze_data(const vector<FrameType> &frames)
+{
+	vector<MotionInterval> ret;
+	auto featureList = get_feature_list(frames);
 	
 	vector<FeatureInfo> infoList;
 	
@@ -55,7 +106,7 @@ vector<MotionInterval> DataProcess::analyze_data(const vector<FrameType> &frames
 
 			auto &feature = vec[j];
 			auto &info = infoList[j];
-			if (feature.left_elbow < threshold || feature.right_elbow < threshold)
+			if ((feature.left_elbow < threshold || feature.right_elbow < threshold) && feature.distance < position_threshold)
 			{
 				if (info.illegalFrames == ignore_frames)
 				{
@@ -74,7 +125,14 @@ vector<MotionInterval> DataProcess::analyze_data(const vector<FrameType> &frames
 					{
 						ret.push_back(MotionInterval(MotionType::PICK_UP, info.startFrame, i));
 					}
-					info.illegalFrames++;
+					if (feature.distance < position_threshold)
+					{
+						info.illegalFrames++;
+					}
+					else
+					{
+						info.illegalFrames = ignore_frames;
+					}
 				}
 			}
 		}

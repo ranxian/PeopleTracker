@@ -17,15 +17,16 @@ std::vector<FrameType> DataScanner::scan(const std::string &path)
 		fgets(buf, max_buf, fin);
 		while (strcmp("\n", buf))
 		{
-			PeopleType people;
+			PeopleType person;
 			for (int i = 0; i < PeopleType::node_number; ++i)
 			{
 				NodeType node;
-				sscanf_s(buf, "%f%f%f", &node.x, &node.y, &node.z);
-				people.node[i] = node;
+				sscanf_s(buf, "%f%f%f%d", &node.x, &node.y, &node.z, &node.r);
+				person.node[i] = node;
 				fgets(buf, max_buf, fin);
 			}
-			frame.people.push_back(people);
+			person.tracked = true;
+			frame.people.push_back(person);
 		}
 		ret.push_back(frame);
 	}
