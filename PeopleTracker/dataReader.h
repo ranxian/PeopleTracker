@@ -80,6 +80,7 @@ class VideoReader:public SeqReader
 {
 public:
 	VideoReader(const string filename):capture(filename){}
+	VideoReader() {};
 	virtual void readImg(Mat& frame){ capture>>frame; }
 private:
 	VideoCapture capture;
@@ -109,6 +110,7 @@ public:
 	inline bool getOpenSuc(){return open_success;}
 	// Return boxes in next frame
 	virtual bool getNextFrameResult(vector<Result2D>& result);
+	XMLBBoxReader(const XMLBBoxReader &){};
 private:
 	txml::XMLDocument file;
 	txml::XMLElement *frame;

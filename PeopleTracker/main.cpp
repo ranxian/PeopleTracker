@@ -36,6 +36,7 @@
 #include "dataReader.h"
 #include "multiTrackAssociation.h"
 #include "parameter.h"
+#include "faceRefiner.h"
 
 using namespace cv;
 using namespace std;
@@ -259,7 +260,7 @@ string getBaseName(string videoName)
 
 int main(int argc,char** argv)
 {
-	cout << "1: Play Result, 2: Run" << endl;
+	cout << "1: Play Result, 2: Run, 3: Face refine" << endl;
 	int option;
 	cin >> option;
 
@@ -280,7 +281,7 @@ int main(int argc,char** argv)
 		result_output_xmlpath = "tracker\\" + baseName + "-result.xml";
 		
 		multiTrack(VIDEO, XML);
-	} else {
+	} else if (option == 1) {
 		cout << "Enter video name: ";
 		string videoName;
 		cin >> videoName;
@@ -288,6 +289,15 @@ int main(int argc,char** argv)
 		_result_xml_file_ = "tracker\\" + getBaseName(videoName) + "-result.xml";
 		cout << _result_xml_file_ << endl;
 		playResult();
+	} else if (option == 3) {
+		cout << "Enter video name: ";
+		string videoName;
+		cin >> videoName;
+		_sequence_path_ = "tracker\\" + videoName;
+		_result_xml_file_ = "tracker\\" + getBaseName(videoName) + "-result.xml";
+		string new_result_xml_path = "tracker\\" + getBaseName(videoName) + "-result-new.xml";
+		FaceRefiner refiner = FaceRefiner(_sequence_path_, _result_xml_file_, new_result_xml_path);
+		refiner.solve();
 	}
 
 	return 0;

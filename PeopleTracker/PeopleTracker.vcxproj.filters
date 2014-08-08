@@ -75,6 +75,9 @@
     <ClCompile Include="utilities\sdk_utils.c">
       <Filter>Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="faceRefiner.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appTemplate.h">
@@ -145,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="utilities\models_path.h">
       <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="faceRefiner.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
