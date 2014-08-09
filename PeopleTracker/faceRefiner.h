@@ -20,7 +20,7 @@ class FaceRefiner
 {
 public:
 	FaceRefiner(string seq_path_, string result_path_, string new_result_path_) :
-		videoReader(seq_path_), resultReader(result_path_.c_str()), new_result_path(new_result_path_){}
+		videoReader(seq_path_), resultReader(result_path_.c_str()), new_result_path(new_result_path_), frameCnt(0){}
 	void solve();
 private:
 	// Use tracker id to find tracker
@@ -34,6 +34,8 @@ private:
 	XMLBBoxReader resultReader;
 	string new_result_path;
 	FaceDetector detector;
+
+	int frameCnt;
 };
 
 #endif

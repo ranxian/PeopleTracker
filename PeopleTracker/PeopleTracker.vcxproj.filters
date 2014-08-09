@@ -20,7 +20,7 @@
       <UniqueIdentifier>{f9a5367a-e1e5-4bf2-87e2-cd93ecbd704b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Utilities">
-      <UniqueIdentifier>{b58cb1b3-8877-45cb-b890-14a8f20a637a}</UniqueIdentifier>
+      <UniqueIdentifier>{c447b865-0dac-4a7f-9a24-5edebe8aa443}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +54,9 @@
     <ClCompile Include="tinyxml2.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="faceRefiner.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
     <ClCompile Include="utilities\sdk_cmd_line.c">
       <Filter>Utilities</Filter>
     </ClCompile>
@@ -74,9 +77,6 @@
     </ClCompile>
     <ClCompile Include="utilities\sdk_utils.c">
       <Filter>Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="faceRefiner.cpp">
-      <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +119,12 @@
     <ClInclude Include="tinyxml2.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="faceRefiner.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\models_path.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
     <ClInclude Include="utilities\sdk_cmd_line.h">
       <Filter>Utilities</Filter>
     </ClInclude>
@@ -145,12 +151,6 @@
     </ClInclude>
     <ClInclude Include="utilities\sdk_utils.h">
       <Filter>Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="utilities\models_path.h">
-      <Filter>Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="faceRefiner.h">
-      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
