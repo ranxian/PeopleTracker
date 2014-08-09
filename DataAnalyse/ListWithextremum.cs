@@ -48,6 +48,37 @@ namespace DataAnalyse
                 }
             }
         }
+
+        public static int smoothFrames = 9;
+
+        public static List<float> smooth(IList<float> list)
+        {
+            int left = smoothFrames / 2, right = (smoothFrames + 1) / 2;
+            List<float> ret = new List<float>();
+            for (int i=0;i<list.Count;++i)
+            {
+                float v = 0;
+                int count = 0;
+                for (int j=i-left;j<i+right;++j)
+                {
+                    if (j >=0 && j<list.Count && list[j]!=float.MaxValue)
+                    {
+                        v += list[j];
+                        count++;
+                    }
+                }
+                if (count == 0)
+                {
+                    ret.Add(float.MaxValue);
+                }
+                else
+                {
+                    ret.Add(v / count);
+                }
+                
+            }
+            return ret;
+        }
     
     }
 }

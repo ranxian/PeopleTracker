@@ -40,9 +40,18 @@ namespace DataAnalyse
             }
         }
 
+        bool position_ignoreZ = false;
         private void button2_Click(object sender, EventArgs e)
         {
-            this.myPanel1.SetList(1, (myPanel1.LList[1] == null)?DataProcess.ExtractPositionFeature() : null);
+            if (myPanel1.LList[1] == null)
+            {
+                this.myPanel1.SetList(1, DataProcess.ExtractPositionFeature(false));
+            }
+            else
+            {
+                this.myPanel1.SetList(1, position_ignoreZ ? null : DataProcess.ExtractPositionFeature(true));
+                position_ignoreZ = !position_ignoreZ;
+            }
         }
 
         private void button3_Click(object sender, EventArgs e)

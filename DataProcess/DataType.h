@@ -2,10 +2,12 @@
 #define DATATYPE_H
 #include<vector>
 
+const float invalid_value = 1e30f;
 
 struct NodeType
 {
 	float x,y,z;
+	int r;
 	NodeType(float _x = 0.f, float _y = 0.f, float _z = 0.f) :
 		x(_x), y(_y), z(_z)
 	{}
@@ -32,6 +34,7 @@ struct PeopleType
 {
 	const static int node_number = 20;
 	NodeType node[node_number];
+	bool tracked;
 };
 
 struct FrameType
