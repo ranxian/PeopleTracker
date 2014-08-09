@@ -8,6 +8,10 @@
 // Helper
 ppr_error_type cv2pprimg(const Mat &frame, ppr_image_type *image);
 bool ppr2cvimg(ppr_image_type *image, Mat &frame);
+// SDK init and term
+bool init_ppr_sdk();
+void finalize_sdk();
+extern ppr_context_type ppr_context;
 
 class FaceDetector
 {
@@ -16,10 +20,10 @@ public:
 	~FaceDetector();
 	virtual void detect(const Mat& frame);
 	void drawDetection(Mat &frame);
+	ppr_face_list_type getDetections();
 private:
 	CascadeClassifier faceClassifier;
 	Mat gray;
-	ppr_context_type ppr_context;
 
 	bool detected;
 

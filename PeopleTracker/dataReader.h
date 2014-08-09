@@ -48,8 +48,9 @@ typedef struct Result2D
 	float xc, yc;  //center point
 	float w, h; //width, height
 	double response;
+	bool valid;
 	Result2D(int i,float x_,float y_,float w_,float h_,double res=1)
-		:id(i),xc(x_),yc(y_),w(w_),h(h_),response(res){}
+		:id(i),xc(x_),yc(y_),w(w_),h(h_),response(res),valid(true){}
 	Result2D(){}
 } Result2D;
 

@@ -62,6 +62,8 @@ int show_detection = 0;
 // Heat map
 int HEAT_RADIUS;
 
+ppr_context_type ppr_context;
+
 void read_config()
 {
 	ifstream conf_file("config.txt");
@@ -265,6 +267,12 @@ int main(int argc,char** argv)
 	cin >> option;
 
 	read_config();
+
+	if (!init_ppr_sdk()) {
+		cout << "can't init pitt patt, quit" << endl;
+		exit(-1);
+	}
+
 	if (option == 2) {
 		cout << "Make sure the video is in the Data directory" << endl
 			<< "And the detection xml is in the same directory and same base name" << endl
@@ -299,6 +307,8 @@ int main(int argc,char** argv)
 		FaceRefiner refiner = FaceRefiner(_sequence_path_, _result_xml_file_, new_result_xml_path);
 		refiner.solve();
 	}
+
+	finalize_sdk();
 
 	return 0;
 }

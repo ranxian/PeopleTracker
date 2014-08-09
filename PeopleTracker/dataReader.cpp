@@ -114,9 +114,10 @@ bool XMLBBoxReader::getNextFrameResult(vector<Result2D>& result)
 	{
 		temp = frame->Attribute("number");
 		int frameNumber = string2int(temp);
+		// The next frame is not available
 		if (frameNumber > frameCount) {
 			frameCount += 1;
-			return false;
+			return true;
 		}
 
 		txml::XMLElement *objectList = frame->FirstChildElement("objectlist");
@@ -146,6 +147,8 @@ bool XMLBBoxReader::getNextFrameResult(vector<Result2D>& result)
 		}
 
 		frame = frame->NextSiblingElement("frame");
+	} else {
+		return false;
 	}
 	
 	frameCount += 1;

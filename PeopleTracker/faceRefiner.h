@@ -2,14 +2,18 @@
 #define _FACE_REFINER_
 #include "face.h"
 #include "tracker.h"
-
+#define MAX_REFINER_TRACKER_NUM 50
 class RefinerTracker
 {
 public:
+	RefinerTracker() : gallery(NULL), typycalFaces(NULL), updated(false) {};
 	vector<Result2D> results;
 	Result2D lastFrameResult;
 	ppr_gallery_type gallery;
 	ppr_gallery_type typycalFaces;
+
+	bool updated;
+	bool valid;
 };
 
 class FaceRefiner
@@ -20,7 +24,7 @@ public:
 	void solve();
 private:
 	// Use tracker id to find tracker
-	map<int, RefinerTracker*> trackers;
+	RefinerTracker trackers[MAX_REFINER_TRACKER_NUM];
 	void associateFace(ppr_face_type face);
 	void findTypycalFace(RefinerTracker *tracker);
 	void calcTrackerLinkNumber(RefinerTracker *tracker1, RefinerTracker *tracker2);

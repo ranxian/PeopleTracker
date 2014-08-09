@@ -41,25 +41,36 @@ ppr_raw_image_type convert_opencv_image_to_ppr(IplImage *cv_image)
 	return p_image;
 }
 
-
-FaceDetector::FaceDetector()
+bool init_ppr_sdk()
 {
 	ppr_error_type r;
 
 	if ((r = ppr_initialize_sdk("models", my_license_id, my_license_key)) != PPR_SUCCESS) {
 		const char *msg = ppr_error_message(r);
 		cout << msg << endl;
+		return false;
 	} else {
 		cout << "PittPatt SDK initialized. Configuring..." << endl;
 		ppr_settings_type setting = ppr_get_default_settings();
-		ppr_detection_settings_type detection_setting = setting.detection;
 		setting.detection.enable = 1;
 		setting.detection.use_serial_face_detection = 1;
 		if ((r = ppr_initialize_context(setting, &ppr_context)) != PPR_SUCCESS) {
 			cout << ppr_error_message(r) << endl;
+			return false;
+		} else {
+			cout << "PittPatt SDK context successfully set" << endl;
 		}
 	}
+	return true;
+}
 
+void finalize_sdk() {
+	ppr_finalize_context(ppr_context);
+	ppr_finalize_sdk();
+}
+
+FaceDetector::FaceDetector()
+{
 	detected = false;
 }
 
@@ -68,8 +79,6 @@ FaceDetector::~FaceDetector()
 	if (detected) {
 		ppr_free_face_list(face_list);
 	}
-	ppr_finalize_context(ppr_context);
-	ppr_finalize_sdk();
 }
 
 void FaceDetector::detect(const Mat &frame)
@@ -151,3 +160,6 @@ bool ppr2cvimg(ppr_image_type *image, Mat &frame)
 	return true;
 }
 
+ppr_face_list_type FaceDetector::getDetections() {
+	return face_list;
+}
