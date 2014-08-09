@@ -43,21 +43,41 @@ void FaceRefiner::associateFace(ppr_face_type face)
 	}
 	
 	// The one with maximum intersect ratio is the best asscociated tracker
-	ppr_add_face(ppr_context, &trackers[max_ratio_tracker_id].gallery, face, max_ratio_tracker_id, trackers[max_ratio_tracker_id].faceCnt);
-	trackers[max_ratio_tracker_id].faceCnt += 1;
+	ppr_add_face(ppr_context, &gallery, face, max_ratio_tracker_id, faceCnt++);
+	cout << "Face associate to tracker #" << max_ratio_tracker_id << endl;
 }
 
-void FaceRefiner::findTypycalFace(RefinerTracker *tracker)
+void FaceRefiner::findTypycalFace()
 {
+	ppr_error_type r;
 
-}
-void FaceRefiner::calcTrackerLinkNumber(RefinerTracker *tracker1, RefinerTracker *tracker2)
-{
+	if ((r = ppr_trim_subjects_to_representative_faces(ppr_context, &gallery, REFINER_REP_FACE_NUM)) != PPR_SUCCESS) {
+		cout << ppr_error_message(r) << endl;
+	}
 
+	cout << "Typycal face found" << endl;
 }
+
+
 void FaceRefiner::mergeTrackers()
 {
+	// Now faces are associated to trackers, we do a clustering directly on the gallery,
+	// hopefully to merge different trackers for one person
+	ppr_error_type r;
+	ppr_cluster_list_type cluster_list;
+	ppr_id_list_type id_list;
 
+	if ((r = ppr_get_subject_id_list(ppr_context, gallery, &id_list)) != PPR_SUCCESS) {
+		cout << ppr_error_message(r) << endl;
+	}
+
+	cout << id_list.length << " subjects before merge" << endl;
+
+	if ((r = ppr_cluster_gallery(ppr_context, &gallery, 1, &cluster_list)) != PPR_SUCCESS) {
+		cout << ppr_error_message(r) << endl;
+	}
+
+	cout << "Merged into " << cluster_list.length << " clusters" << endl;
 }
 
 
@@ -135,7 +155,6 @@ void FaceRefiner::solve()
 		for (it = results.begin(); it != results.end(); it++) {
 			Result2D result = *it;
 			trackers[result.id].results.push_back(result);
-			trackers[result.id].lastFrameResult = result;
 			if (trackers[result.id].valid == false)
 				trackers[result.id].valid = true;
 		}
@@ -156,9 +175,7 @@ void FaceRefiner::solve()
 		}
 	}
 
-	for (int i = 0; i < MAX_REFINER_TRACKER_NUM; i++) {
-		findTypycalFace(&trackers[i]);
-	}
+	findTypycalFace();
 	
 	mergeTrackers();
 	
