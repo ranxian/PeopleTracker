@@ -3,8 +3,50 @@
 
 void FaceRefiner::associateFace(ppr_face_type face)
 {
+	ppr_face_attributes_type attr; 
+	ppr_error_type r;
+	Rect face_rect;
+	double ratios[MAX_REFINER_TRACKER_NUM] = {};
 
+	if ((r = ppr_get_face_attributes(face, &attr)) != PPR_SUCCESS) {
+		cout << ppr_error_message(r) << endl;
+		return;
+	}
+
+	face_rect = Rect(attr.position.x - attr.dimensions.width / 2,
+		attr.position.y - attr.dimensions.height / 2, attr.dimensions.width, attr.dimensions.height);
+
+	int max_ratio_tracker_id = -1;
+	double max_tracker_ratio = 0;
+
+	for (int i = 0; i < MAX_REFINER_TRACKER_NUM; i++) {
+		if (trackers[i].valid) {
+			Result2D r;
+			r.valid = false;
+			// Find most recenct 5 results
+			for (int j = 0; j < 5; j++) {
+				if (frameCnt - j - 1 < 0)
+					break;
+				if (trackers[i].results[frameCnt - j - 1].valid) {
+					r = trackers[i].results[frameCnt-j-1];
+					break;
+				}
+			}
+			if (r.valid) {
+				Rect tracker_rect(r.xc - r.w / 2, r.yc - r.h / 2, r.w, r.h);
+				Rect intersect = tracker_rect & face_rect;
+				ratios[i] = intersect.area() / (double)face_rect.area();
+				if (ratios[i] >= max_tracker_ratio)
+					max_ratio_tracker_id = i;
+			}
+		}
+	}
+	
+	// The one with maximum intersect ratio is the best asscociated tracker
+	ppr_add_face(ppr_context, &trackers[max_ratio_tracker_id].gallery, face, max_ratio_tracker_id, trackers[max_ratio_tracker_id].faceCnt);
+	trackers[max_ratio_tracker_id].faceCnt += 1;
 }
+
 void FaceRefiner::findTypycalFace(RefinerTracker *tracker)
 {
 

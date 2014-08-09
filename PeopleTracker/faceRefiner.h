@@ -3,14 +3,17 @@
 #include "face.h"
 #include "tracker.h"
 #define MAX_REFINER_TRACKER_NUM 50
+#define FACE_ASSOC_THRES 0.8
 class RefinerTracker
 {
 public:
-	RefinerTracker() : gallery(NULL), typycalFaces(NULL), updated(false) {};
+	RefinerTracker() : gallery(NULL), typycalFaces(NULL), updated(false), faceCnt(0) {};
 	vector<Result2D> results;
 	Result2D lastFrameResult;
 	ppr_gallery_type gallery;
 	ppr_gallery_type typycalFaces;
+
+	int faceCnt;
 
 	bool updated;
 	bool valid;
