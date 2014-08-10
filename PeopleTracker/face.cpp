@@ -54,6 +54,10 @@ bool init_ppr_sdk()
 		ppr_settings_type setting = ppr_get_default_settings();
 		setting.detection.enable = 1;
 		setting.detection.use_serial_face_detection = 1;
+		setting.recognition.enable_comparison = 1;
+		setting.recognition.automatically_extract_templates = 1;
+		setting.landmarks.enable = 1;
+		setting.landmarks.manually_detect_landmarks = 0;
 		if ((r = ppr_initialize_context(setting, &ppr_context)) != PPR_SUCCESS) {
 			cout << ppr_error_message(r) << endl;
 			return false;
@@ -162,4 +166,16 @@ bool ppr2cvimg(ppr_image_type *image, Mat &frame)
 
 ppr_face_list_type FaceDetector::getDetections() {
 	return face_list;
+}
+
+int getGalleryFaceNum(ppr_gallery_type gallery)
+{
+	ppr_error_type r;
+	ppr_id_list_type ilist;
+	if ((r = ppr_get_face_id_list(ppr_context, gallery, &ilist)) != PPR_SUCCESS) {
+		cout << "getGalleryFaceNum: " << ppr_error_message(r) << endl;
+		return -1;
+	} else {
+		return ilist.length;
+	}
 }

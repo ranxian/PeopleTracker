@@ -8,6 +8,7 @@
 // Helper
 ppr_error_type cv2pprimg(const Mat &frame, ppr_image_type *image);
 bool ppr2cvimg(ppr_image_type *image, Mat &frame);
+int getGalleryFaceNum(ppr_gallery_type gallery);
 // SDK init and term
 bool init_ppr_sdk();
 void finalize_sdk();

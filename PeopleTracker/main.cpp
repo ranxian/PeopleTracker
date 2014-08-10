@@ -304,7 +304,7 @@ int main(int argc,char** argv)
 		_sequence_path_ = "tracker\\" + videoName;
 		_result_xml_file_ = "tracker\\" + getBaseName(videoName) + "-result.xml";
 		string new_result_xml_path = "tracker\\" + getBaseName(videoName) + "-result-new.xml";
-		FaceRefiner refiner = FaceRefiner(_sequence_path_, _result_xml_file_, new_result_xml_path);
+		FaceRefiner refiner(_sequence_path_, _result_xml_file_, new_result_xml_path);
 		refiner.solve();
 	}
 

@@ -13,8 +13,8 @@ void FaceRefiner::associateFace(ppr_face_type face)
 		return;
 	}
 
-	face_rect = Rect(attr.position.x - attr.dimensions.width / 2,
-		attr.position.y - attr.dimensions.height / 2, attr.dimensions.width, attr.dimensions.height);
+	face_rect = Rect((int)attr.position.x - (int)(attr.dimensions.width / 2),
+		(int)attr.position.y - (int)(attr.dimensions.height / 2), (int)attr.dimensions.width, (int)attr.dimensions.height);
 
 	int max_ratio_tracker_id = -1;
 	double max_tracker_ratio = 0;
@@ -33,7 +33,7 @@ void FaceRefiner::associateFace(ppr_face_type face)
 				}
 			}
 			if (r.valid) {
-				Rect tracker_rect(r.xc - r.w / 2, r.yc - r.h / 2, r.w, r.h);
+				Rect tracker_rect((int)r.xc - (int)(r.w / 2), (int)r.yc - (int)(r.h / 2), (int)r.w, (int)r.h);
 				Rect intersect = tracker_rect & face_rect;
 				ratios[i] = intersect.area() / (double)face_rect.area();
 				if (ratios[i] >= max_tracker_ratio)
@@ -41,10 +41,13 @@ void FaceRefiner::associateFace(ppr_face_type face)
 			}
 		}
 	}
-	
-	// The one with maximum intersect ratio is the best asscociated tracker
-	ppr_add_face(ppr_context, &gallery, face, max_ratio_tracker_id, faceCnt++);
-	cout << "Face associate to tracker #" << max_ratio_tracker_id << endl;
+
+	if (max_ratio_tracker_id >= 0) {
+		// The one with maximum intersect ratio is the best asscociated tracker
+		cout << "Face associate to tracker #" << max_ratio_tracker_id << ", " << getGalleryFaceNum(gallery) << " faces in the gallery" << endl;
+	} else {
+		cout << "Face has no assciated tracker" << endl;
+	}
 }
 
 void FaceRefiner::findTypycalFace()
@@ -52,32 +55,29 @@ void FaceRefiner::findTypycalFace()
 	ppr_error_type r;
 
 	if ((r = ppr_trim_subjects_to_representative_faces(ppr_context, &gallery, REFINER_REP_FACE_NUM)) != PPR_SUCCESS) {
-		cout << ppr_error_message(r) << endl;
-	}
+		cout << "findTypycalFace: " << ppr_error_message(r) << endl;
+		return;
+	} 
 
-	cout << "Typycal face found" << endl;
+	cout << "Typycal face found, trimed to " << getGalleryFaceNum(gallery) << endl;
 }
-
 
 void FaceRefiner::mergeTrackers()
 {
 	// Now faces are associated to trackers, we do a clustering directly on the gallery,
 	// hopefully to merge different trackers for one person
 	ppr_error_type r;
-	ppr_cluster_list_type cluster_list;
 	ppr_id_list_type id_list;
 
 	if ((r = ppr_get_subject_id_list(ppr_context, gallery, &id_list)) != PPR_SUCCESS) {
 		cout << ppr_error_message(r) << endl;
 	}
 
-	cout << id_list.length << " subjects before merge" << endl;
-
 	if ((r = ppr_cluster_gallery(ppr_context, &gallery, 1, &cluster_list)) != PPR_SUCCESS) {
 		cout << ppr_error_message(r) << endl;
 	}
 
-	cout << "Merged into " << cluster_list.length << " clusters" << endl;
+	cout << id_list.length << " subject merged into " << cluster_list.length << " clusters" << endl;
 }
 
 
@@ -133,6 +133,23 @@ void FaceRefiner::outputResults()
 
 	printer.CloseElement();
 	fprintf(file, printer.CStr());
+}
+
+void FaceRefiner::printGalleryFaceNum()
+{
+	ppr_error_type r;
+	ppr_id_list_type ilist;
+	ilist.length = 0;
+	if ((r = ppr_get_face_id_list(ppr_context, this->gallery, &ilist)) != PPR_SUCCESS) {
+		cout << "associateFace: " << ppr_error_message(r) << endl;
+	}
+	cout << ilist.length << " face in the gallery" << endl;
+}
+
+FaceRefiner::~FaceRefiner()
+{
+	ppr_free_gallery(gallery);
+	ppr_free_cluster_list(cluster_list);
 }
 
 // The overall binding
