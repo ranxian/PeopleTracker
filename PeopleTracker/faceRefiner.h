@@ -17,18 +17,14 @@ public:
 class FaceRefiner
 {
 public:
-	FaceRefiner(string seq_path_, string result_path_, string new_result_path_) :
-		videoReader(seq_path_), resultReader(result_path_.c_str()), new_result_path(new_result_path_), frameCnt(0), faceCnt(0)
-	{
-		ppr_error_type r;
-		if ((r = ppr_create_gallery(ppr_context, &gallery)) != PPR_SUCCESS) {
-			cout << "FaceRefiner: " << ppr_error_message(r) << endl;
-		}
-	}
+	FaceRefiner(string seq_path_, string result_path_, string new_result_path_);
 	FaceRefiner::~FaceRefiner();
 	void solve();
 private:
-	void FaceRefiner::printGalleryFaceNum();
+	void readFaceList(int frame, ppr_face_list_type *face_list);
+	void writeFaceList(int frame, ppr_face_list_type face_list);
+	void printGalleryFaceNum();
+	void drawTrackerWithFace();
 	// Use tracker id to find tracker
 	RefinerTracker trackers[MAX_REFINER_TRACKER_NUM];
 	void associateFace(ppr_face_type face);
@@ -44,6 +40,14 @@ private:
 	int faceCnt;
 
 	int frameCnt;
+
+	Mat frame;
+
+	vector<Rect> faceRectInTheFrame;
+	vector<int> assocInTheFrame;
+
+	bool hasResult;
+	string rootPath;
 };
 
 #endif

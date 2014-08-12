@@ -28,6 +28,8 @@
 
 #include <opencv2/opencv.hpp>
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
 
 using namespace cv;
 using namespace std;
@@ -129,4 +131,23 @@ inline Rect scaleWin(Rect win, double scale)
 		(int)(win.height*scale));
 }
 
+inline string getBaseName(string videoName)
+{
+	char buf[256];
+	strcpy_s(buf, videoName.c_str());
+	buf[strlen(buf) - 4] = 0;
+	return string(buf);
+}
+
+inline bool fexists(const char *filename)
+{
+	ifstream ifile(filename);
+	return !!ifile;
+}
+
+inline bool fexists(string filename)
+{
+	ifstream ifile(filename);
+	return !!ifile;
+}
 #endif

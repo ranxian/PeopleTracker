@@ -247,19 +247,6 @@ void playResult()
 	}
 }
 
-// Turn xx.mp4 to xx
-string getBaseName(string videoName)
-{
-	char buf[256];
-	strcpy_s(buf, videoName.c_str());
-	strtok(buf, ".");
-	char *bn = strtok(NULL, buf);
-	if (bn == NULL)
-		return "";
-	else
-		return String(buf);
-}
-
 int main(int argc,char** argv)
 {
 	cout << "1: Play Result, 2: Run, 3: Face refine" << endl;

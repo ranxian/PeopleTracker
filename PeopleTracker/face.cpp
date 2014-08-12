@@ -54,6 +54,9 @@ bool init_ppr_sdk()
 		ppr_settings_type setting = ppr_get_default_settings();
 		setting.detection.enable = 1;
 		setting.detection.use_serial_face_detection = 1;
+		setting.detection.extract_thumbnails = 1;
+		setting.detection.search_pruning_aggressiveness = 1;
+		setting.detection.threshold = 0.2;
 		setting.recognition.enable_comparison = 1;
 		setting.recognition.automatically_extract_templates = 1;
 		setting.landmarks.enable = 1;

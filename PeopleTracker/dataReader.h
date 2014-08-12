@@ -45,8 +45,8 @@ namespace txml = tinyxml2;
 typedef struct Result2D
 {
 	int id;
-	float xc, yc;  //center point
-	float w, h; //width, height
+	double xc, yc;  //center point
+	double w, h; //width, height
 	double response;
 	bool valid;
 	Result2D(int i,float x_,float y_,float w_,float h_,double res=1)
