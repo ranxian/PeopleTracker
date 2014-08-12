@@ -2,7 +2,7 @@
 #define _FACE_REFINER_
 #include "face.h"
 #include "tracker.h"
-#define REFINER_MAX_TRACKER_NUM 50
+#define REFINER_MAX_TRACKER_NUM 20
 #define REFINER_FACE_ASSOC_THRES 0.8
 #define REFINER_REP_FACE_NUM 5
 #define REFINER_CLUSTER_AGGR 6
@@ -14,6 +14,15 @@ public:
 	vector<Result2D> results;
 	bool updated;
 	bool valid;
+};
+
+class RefinerFace
+{
+public:
+	RefinerFace(ppr_face_type face_, int faceID_, int subjectID_) : face(face_), faceID(faceID_), subjectID(subjectID_) {};
+	ppr_face_type face;
+	int faceID;
+	int subjectID;
 };
 
 class FaceRefiner
@@ -33,6 +42,9 @@ private:
 	void findTypycalFace();
 	void mergeTrackers();
 	void outputResults();
+	int calcLink(int subid1, int subid2);
+	void addFacesToGallery(int subid, ppr_gallery_type *target_gallery);
+	vector<int> FaceRefiner::getSubjectFaceIds(int subid);
 	VideoReader videoReader;
 	XMLBBoxReader resultReader;
 	string new_result_path;
@@ -47,6 +59,8 @@ private:
 
 	vector<Rect> faceRectInTheFrame;
 	vector<int> assocInTheFrame;
+
+	vector<RefinerFace> allFaces;
 
 	bool hasResult;
 	string rootPath;
