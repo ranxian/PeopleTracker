@@ -2,9 +2,11 @@
 #define _FACE_REFINER_
 #include "face.h"
 #include "tracker.h"
-#define MAX_REFINER_TRACKER_NUM 50
-#define FACE_ASSOC_THRES 0.8
-#define REFINER_REP_FACE_NUM 10
+#define REFINER_MAX_TRACKER_NUM 50
+#define REFINER_FACE_ASSOC_THRES 0.8
+#define REFINER_REP_FACE_NUM 5
+#define REFINER_CLUSTER_AGGR 6
+#define REFINER_UNKOWN_SUBJECT_ID 100
 class RefinerTracker
 {
 public:
@@ -26,7 +28,7 @@ private:
 	void printGalleryFaceNum();
 	void drawTrackerWithFace();
 	// Use tracker id to find tracker
-	RefinerTracker trackers[MAX_REFINER_TRACKER_NUM];
+	RefinerTracker trackers[REFINER_MAX_TRACKER_NUM];
 	void associateFace(ppr_face_type face);
 	void findTypycalFace();
 	void mergeTrackers();
@@ -48,6 +50,7 @@ private:
 
 	bool hasResult;
 	string rootPath;
+	string clusterPath;
 };
 
 #endif

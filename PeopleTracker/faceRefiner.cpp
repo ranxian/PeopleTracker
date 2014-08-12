@@ -4,6 +4,7 @@
 #include <direct.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "utilities/sdk_utilities.h"
 
 FaceRefiner::FaceRefiner(string seq_path_, string result_path_, string new_result_path_) :
 videoReader(seq_path_), resultReader(result_path_.c_str()), new_result_path(new_result_path_), frameCnt(0), faceCnt(0)
@@ -23,6 +24,10 @@ videoReader(seq_path_), resultReader(result_path_.c_str()), new_result_path(new_
 	// Create data dir
 	rootPath =  getBaseName(seq_path_);
 	int re = _mkdir(rootPath.c_str());
+
+	// Remove cluster dir
+	clusterPath = rootPath + "\\" + "cluster";
+	_rmdir(clusterPath.c_str());
 }
 
 Rect box2rect(const Result2D *box)
@@ -40,7 +45,7 @@ void FaceRefiner::associateFace(ppr_face_type face)
 	ppr_face_attributes_type attr; 
 	ppr_error_type r;
 	Rect face_rect;
-	double ratios[MAX_REFINER_TRACKER_NUM] = {};
+	double ratios[REFINER_MAX_TRACKER_NUM] = {};
 
 	if ((r = ppr_get_face_attributes(face, &attr)) != PPR_SUCCESS) {
 		cout << ppr_error_message(r) << endl;
@@ -54,7 +59,7 @@ void FaceRefiner::associateFace(ppr_face_type face)
 	int max_ratio_tracker_id = -1;
 	double max_tracker_ratio = 0;
 
-	for (int i = 0; i < MAX_REFINER_TRACKER_NUM; i++) {
+	for (int i = 0; i < REFINER_MAX_TRACKER_NUM; i++) {
 		if (trackers[i].valid) {
 			Result2D r;
 			r.valid = false;
@@ -84,13 +89,14 @@ void FaceRefiner::associateFace(ppr_face_type face)
 
 	cout << "Max ratio is " << max_tracker_ratio << endl;
 
-	if (max_ratio_tracker_id >= 0 && max_tracker_ratio >= FACE_ASSOC_THRES) {
+	if (max_ratio_tracker_id >= 0 && max_tracker_ratio >= REFINER_FACE_ASSOC_THRES) {
 		// The one with maximum intersect ratio is the best asscociated tracker
 		cout << "Face associate to tracker #" << max_ratio_tracker_id << ", " << getGalleryFaceNum(gallery) << " faces in the gallery" << endl;
 		assocInTheFrame.push_back(max_ratio_tracker_id);
-		ppr_add_face(ppr_context, &gallery, face, max_ratio_tracker_id, faceCnt++);
+		ppr_add_face(ppr_context, &gallery, face, faceCnt, faceCnt++);
 	} else {
 		cout << "Face has no assciated tracker" << endl;
+		ppr_add_face(ppr_context, &gallery, face, REFINER_UNKOWN_SUBJECT_ID, faceCnt++);
 		assocInTheFrame.push_back(-1);
 	}
 
@@ -99,6 +105,7 @@ void FaceRefiner::associateFace(ppr_face_type face)
 
 void FaceRefiner::findTypycalFace()
 {
+	return;
 	ppr_error_type r;
 
 	if ((r = ppr_trim_subjects_to_representative_faces(ppr_context, &gallery, REFINER_REP_FACE_NUM)) != PPR_SUCCESS) {
@@ -115,12 +122,23 @@ void FaceRefiner::mergeTrackers()
 	// hopefully to merge different trackers for one person
 	ppr_error_type r;
 	ppr_id_list_type id_list;
+	ppr_similarity_matrix_ref_type smatrix_ref;
+	// Get similarity score
+
+	if ((r = ppr_get_self_similarity_matrix_reference(ppr_context, gallery, &smatrix_ref)) != PPR_SUCCESS) {
+		cout << "mergeTrackers:ppr_get_self_similarity_matrix_reference: " << ppr_error_message(r) << endl;
+	}
+
+	// Adjust similarity score by transitive matching	
+	if ((r = ppr_enable_transitive_matching(ppr_context, smatrix_ref)) != PPR_SUCCESS) {
+		cout << "mergeTrackers:ppr_enable_transitive_matching: " << ppr_error_message(r) << endl;
+	}
 
 	if ((r = ppr_get_subject_id_list(ppr_context, gallery, &id_list)) != PPR_SUCCESS) {
 		cout << ppr_error_message(r) << endl;
 	}
 
-	if ((r = ppr_cluster_gallery(ppr_context, &gallery, 1, &cluster_list)) != PPR_SUCCESS) {
+	if ((r = ppr_cluster_gallery(ppr_context, &gallery, REFINER_CLUSTER_AGGR, &cluster_list)) != PPR_SUCCESS) {
 		cout << ppr_error_message(r) << endl;
 	}
 
@@ -135,7 +153,6 @@ static void writeFrameToXml(tinyxml2::XMLPrinter &printer, vector<Result2D> &res
 	printer.PushAttribute("number", frameCount);
 	printer.OpenElement("objectlist");
 
-	cout << frameCount << endl;
 	vector<Result2D>::iterator it;
 	for (it = results.begin(); it != results.end(); it++) {
 		printer.OpenElement("object");
@@ -159,6 +176,7 @@ static void writeFrameToXml(tinyxml2::XMLPrinter &printer, vector<Result2D> &res
 
 void FaceRefiner::outputResults()
 {
+	// Write xml result
 	tinyxml2::XMLPrinter printer;
 
 	printer.PushHeader(true, true);
@@ -166,7 +184,7 @@ void FaceRefiner::outputResults()
 
 	for (int i = 0; i < frameCnt; i++) {
 		vector<Result2D> results;
-		for (int j = 0; j < MAX_REFINER_TRACKER_NUM; j++) {
+		for (int j = 0; j < REFINER_MAX_TRACKER_NUM; j++) {
 			if (trackers[j].valid && trackers[j].results[i].valid) {
 				results.push_back(trackers[j].results[i]);
 			}
@@ -181,6 +199,10 @@ void FaceRefiner::outputResults()
 		cout << "Can't open file " << new_result_path << " for writing result" << endl;
 	}
 	fprintf(file, printer.CStr());
+
+	//  Write cluster result
+	sdk_utils_make_directory(clusterPath.c_str());
+	sdk_utils_write_cluster_thumbnails(clusterPath.c_str(), ppr_context, gallery, cluster_list);
 }
 
 void FaceRefiner::printGalleryFaceNum()
@@ -206,7 +228,7 @@ void FaceRefiner::drawTrackerWithFace()
 	Mat drawFrame;
 	frame.copyTo(drawFrame);
 	// Draw tracker
-	for (int i = 0; i < MAX_REFINER_TRACKER_NUM; i++) {
+	for (int i = 0; i < REFINER_MAX_TRACKER_NUM; i++) {
 		if (trackers[i].valid) {
 			Result2D result = trackers[i].results.back();
 			Rect trect = box2rect(&result);
@@ -235,7 +257,7 @@ void FaceRefiner::solve()
 	while (true) {
 		// Read frame
 		videoReader.readImg(frame);
-		if (frame.empty() || frame.data == NULL || frameCnt > 53)
+		if (frame.empty() || frame.data == NULL)
 			break;
 		frameCnt += 1;
 		
@@ -262,17 +284,13 @@ void FaceRefiner::solve()
 		}
 
 		// Add invalid result for trackers with no results
-		for (int i = 0; i < MAX_REFINER_TRACKER_NUM; i++) {
+		for (int i = 0; i < REFINER_MAX_TRACKER_NUM; i++) {
 			if (trackers[i].results.size() < frameCnt) {
 				Result2D result;
 				result.valid = false;
 				trackers[i].results.push_back(result);
 			}
 		}
-
-		// There's no tracker in the first 26 frames.
-		if (frameCnt < 26)
-			continue;
 
 		// Detect faces
 		if (!hasResult) {
@@ -294,7 +312,7 @@ void FaceRefiner::solve()
 		drawTrackerWithFace();
 
 		char key;
-		key = waitKey(60);
+		key = waitKey(10);
 		if (key == 'q')
 			break;
 
