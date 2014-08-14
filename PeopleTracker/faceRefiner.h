@@ -59,6 +59,7 @@ private:
 
 	vector<Rect> faceRectInTheFrame;
 	vector<int> assocInTheFrame;
+	vector<Rect> weakDetectionInTheFrame;
 
 	vector<RefinerFace> allFaces;
 

@@ -179,7 +179,7 @@ int getGalleryFaceNum(ppr_gallery_type gallery)
 	ppr_error_type r;
 	ppr_id_list_type ilist;
 	if ((r = ppr_get_face_id_list(ppr_context, gallery, &ilist)) != PPR_SUCCESS) {
-		cout << "getGalleryFaceNum: " << ppr_error_message(r) << endl;
+		cout << "getGalleryFaceNum:ppr_get_face_id_list: " << ppr_error_message(r) << endl;
 		return -1;
 	} else {
 		return ilist.length;
