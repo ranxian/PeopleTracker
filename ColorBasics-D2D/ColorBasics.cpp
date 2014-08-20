@@ -10,6 +10,9 @@
 #include "resource.h"
 #include <iostream>
 #include "stdio.h"
+#include "time.h"
+#include <string>
+using namespace std;
 
 /// <summary>
 /// Entry point for the application
@@ -36,7 +39,18 @@ CColorBasics::CColorBasics() :
     m_bSaveScreenshot(false),
     m_pNuiSensor(NULL)
 {
-	const char *filepath = "experiment\\video.avi";
+	time_t t;
+	time(&t);
+	string buf = "experiment\\video";
+	char buff[100], bufff[100]; 
+	sprintf(buff, "%d", t);
+	sscanf(buff, "%s", bufff);
+	buf += bufff;
+	buf += ".avi";
+
+	cout << buf << endl;
+
+	const char *filepath = buf.c_str();
 	outputVideo.open(filepath, -1, fps, cv::Size(cColorWidth, cColorHeight));
 }
 

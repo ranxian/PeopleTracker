@@ -328,6 +328,8 @@ void FaceRefiner::solve()
 		if (frame.empty() || frame.data == NULL)
 			break;
 		frameCnt += 1;
+		if (frameCnt < 100)
+			continue;
 		
 		cout << "Frame #" << frameCnt << endl;
 
