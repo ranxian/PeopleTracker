@@ -52,6 +52,13 @@ typedef struct Result2D
 	Result2D(int i,float x_,float y_,float w_,float h_,double res=1)
 		:id(i),xc(x_),yc(y_),w(w_),h(h_),response(res),valid(true){}
 	Result2D(){}
+
+public:
+	string to_s() {
+		char str[256];
+		sprintf(str, "[(%.2lf,%.2lf), %.2lfx%.2lf]", xc, yc, w, h);
+		return string(str);
+	}
 } Result2D;
 
 // Sequence reader interface
@@ -118,6 +125,7 @@ public:
 	// Return boxes in next frame
 	virtual bool getNextFrameResult(vector<Result2D>& result);
 	XMLBBoxReader(const XMLBBoxReader &){};
+	bool getResultForFrame(vector<Result2D>& result, int frameno);
 private:
 	txml::XMLDocument file;
 	txml::XMLElement *frame;

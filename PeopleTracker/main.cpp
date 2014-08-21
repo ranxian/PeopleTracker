@@ -221,7 +221,6 @@ int main(int argc,char** argv)
 		_sequence_path_ = "tracker\\" + videoName;
 		_detection_xml_file_ = "tracker\\" + baseName + ".xml";
 		result_output_xmlpath = "tracker\\" + baseName + "-result.xml";
-		
 		multiTrack(VIDEO, XML);
 	} else if (option == 1) {
 		cout << "Enter video name: ";

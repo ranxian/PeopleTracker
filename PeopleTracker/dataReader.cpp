@@ -107,6 +107,45 @@ XMLBBoxReader::XMLBBoxReader(const char* filename)
 	}			
 	frameCount = 1;
 }
+
+bool XMLBBoxReader::getResultForFrame(vector<Result2D>& result, int frameno)
+{
+	result.clear();
+	while (frame != NULL) {
+		temp = frame->Attribute("number");
+		int frameNumber = string2int(temp);
+		if (frameNumber == frameno) {
+			txml::XMLElement *objectList = frame->FirstChildElement("objectlist");
+			if (objectList != NULL) {
+				txml::XMLElement *object = objectList->FirstChildElement("object");
+				while (object != NULL) //object level
+				{
+					Result2D res;
+					temp = object->Attribute("id");
+					res.id = string2int(temp);
+					txml::XMLElement *box = object->FirstChildElement("box");
+
+					if (box != NULL) {
+						temp = box->Attribute("h");
+						res.h = (float)string2float((char*)temp);
+						temp = box->Attribute("w");
+						res.w = (float)string2float((char*)temp);
+						temp = box->Attribute("xc");
+						res.xc = (float)string2float((char*)temp);
+						temp = box->Attribute("yc");
+						res.yc = (float)string2float((char*)temp);
+						result.push_back(res);
+					}
+					object = object->NextSiblingElement("object");
+				}
+			}
+			return true;
+		}
+		frame = frame->NextSiblingElement("frame");
+	}
+	return false;
+}
+
 bool XMLBBoxReader::getNextFrameResult(vector<Result2D>& result)
 {
 	result.clear();

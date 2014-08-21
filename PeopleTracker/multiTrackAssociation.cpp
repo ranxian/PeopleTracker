@@ -384,6 +384,11 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 }
 void TrakerManager::doWork(Mat& frame)
 {
+	// Resize the frame, but keep the original one for face detection
+	Mat origFrame;
+	frame.copyTo(origFrame);
+	for (int k = 0; k < LOG_FACE_TO_TRACK_RATIO - 1; k++)
+		pyrDown(frame, frame);
 	Mat bgr, hsv, lab;
 	frame.copyTo(bgr);
 	cvtColor(frame, hsv, CV_RGB2HSV);
@@ -403,15 +408,22 @@ void TrakerManager::doWork(Mat& frame)
 
 	// Add face detection
 	// detect face
-	face_detector.detect(frame);
+	face_detector.detect(origFrame);
 	ppr_face_list_type faceList = face_detector.getDetections();
 	if (show_face) {
-		face_detector.drawDetection(frame);
+		face_detector.drawDetection(origFrame);
 	}
 		
 	for (int ii = 0; ii < faceList.length; ii++) {
 		double conf;
 		Rect detect_rect = face_detector.guessPeopleDetection(faceList.faces[ii], &conf);
+		// Resize detect result
+		for (int k = 0; k < LOG_FACE_TO_TRACK_RATIO - 1; k++) {
+			detect_rect.x /= 2;
+			detect_rect.y /= 2;
+			detect_rect.height /= 2;
+			detect_rect.width /= 2;
+		}
 		detections.push_back(detect_rect);
 		response.push_back(1);
 	}

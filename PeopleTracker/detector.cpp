@@ -110,22 +110,20 @@ void XMLDetector::detect(const Mat& f)
 					rectRes.y = cvRound(res.yc - 0.5*res.h);
 
 					// Resize the detection
-					for (int kk = 0; kk < LOG_FACE_TO_TRACK_RATIO - 1; kk++) {
-						rectRes.x *= 2;
-						rectRes.y *= 2;
-						rectRes.height *= 2;
-						rectRes.width *= 2;
-					}
+					//	rectRes.x *= 0.5;
+					//	rectRes.y *= 0.5;
+					//	rectRes.height *= 0.5;
+					//	rectRes.width *= 0.5;
 
-					if (rectRes.height / (double)rectRes.width >= 1.75 
-						&& rectRes.height <= FRAME_SIZE.height*0.75
-						&& rectRes.width <= FRAME_SIZE.width*0.5) {
+					//if (rectRes.height / (double)rectRes.width >= 1.75 
+						//	&& rectRes.height <= FRAME_SIZE.height*0.75
+						//  && rectRes.width <= FRAME_SIZE.width*0.5) {
 						detection.push_back(rectRes);
 						response.push_back(confidence);
-					} else {
-						Point wierd(rectRes.height, rectRes.width);
-						cout << wierd << " is a wierd height width ratio, abort" << endl;
-					}
+					//} else {
+						//	Point wierd(rectRes.height, rectRes.width);
+						//cout << wierd << " is a wierd height width ratio, abort" << endl;
+					//}
 				}
 				object = object->NextSiblingElement("object");
 			}
