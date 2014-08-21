@@ -109,6 +109,14 @@ void XMLDetector::detect(const Mat& f)
 					rectRes.x = cvRound(res.xc - 0.5*res.w);
 					rectRes.y = cvRound(res.yc - 0.5*res.h);
 
+					// Resize the detection
+					for (int kk = 0; kk < LOG_FACE_TO_TRACK_RATIO - 1; kk++) {
+						rectRes.x *= 2;
+						rectRes.y *= 2;
+						rectRes.height *= 2;
+						rectRes.width *= 2;
+					}
+
 					if (rectRes.height / (double)rectRes.width >= 1.75 
 						&& rectRes.height <= FRAME_SIZE.height*0.75
 						&& rectRes.width <= FRAME_SIZE.width*0.5) {

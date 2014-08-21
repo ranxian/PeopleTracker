@@ -405,9 +405,10 @@ void TrakerManager::doWork(Mat& frame)
 	// detect face
 	face_detector.detect(frame);
 	ppr_face_list_type faceList = face_detector.getDetections();
-	if (show_face)
+	if (show_face) {
 		face_detector.drawDetection(frame);
-
+	}
+		
 	for (int ii = 0; ii < faceList.length; ii++) {
 		double conf;
 		Rect detect_rect = face_detector.guessPeopleDetection(faceList.faces[ii], &conf);

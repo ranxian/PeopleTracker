@@ -202,10 +202,10 @@ int main(int argc,char** argv)
 
 	read_config();
 
-	//if (!init_ppr_sdk()) {
-	//	cout << "can't init pitt patt, quit" << endl;
-	//	exit(-1);
-	//}
+	if (!init_ppr_sdk()) {
+		cout << "can't init pitt patt, quit" << endl;
+		exit(-1);
+	}
 
 	if (option == 2) {
 		cout << "Make sure the video is in the Data directory" << endl
@@ -241,12 +241,11 @@ int main(int argc,char** argv)
 		FaceRefiner refiner(_sequence_path_, _result_xml_file_, new_result_xml_path);
 		refiner.solve();
 	} else if (option == 4) {
-		LOG_FACE_TO_TRACK_RATIO = 2;
 		BenchmarkRunner runner;
 		runner.run();
 	}
 
-	// finalize_sdk();
+	finalize_sdk();
 
 	return 0;
 }

@@ -83,6 +83,12 @@ public:
 	VideoReader(const string filename):capture(filename){}
 	VideoReader() {};
 	virtual void readImg(Mat& frame){ capture>>frame; }
+	int getFrameCount() {
+		return (int)capture.get(CV_CAP_PROP_FRAME_COUNT);
+	}
+	Size getFrameSize() {
+		return Size((int)capture.get(CV_CAP_PROP_FRAME_WIDTH), (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT));
+	}
 private:
 	VideoCapture capture;
 };

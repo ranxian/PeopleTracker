@@ -157,6 +157,14 @@ public:
 		_my_char = c;
 	}
 
+	void toggleDrawDetection() {
+		show_detection = !show_detection;
+	}
+
+	void toggleShowFace() {
+		show_face = !show_face;
+	}
+
 	vector<Result2D> getCurrentFrameResult() {
 		return _currentFrameResult;
 	}

@@ -17,7 +17,7 @@ public:
 	void run();
 private:
 	void testLocation(const char *testname);
-	void runTracker(const char *videoFilePath, const char *xmlFilePath);
+	void runTracker(const char *videoFilePath, const char *xmlFilePath, const char *resultFilePath);
 };
 
 #endif
