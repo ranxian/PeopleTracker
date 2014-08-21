@@ -401,6 +401,20 @@ void TrakerManager::doWork(Mat& frame)
 	vector<double> response = _detector->getResponse();
 	vector<int> det_filter;
 
+	// Add face detection
+	// detect face
+	face_detector.detect(frame);
+	ppr_face_list_type faceList = face_detector.getDetections();
+	if (show_face)
+		face_detector.drawDetection(frame);
+
+	for (int ii = 0; ii < faceList.length; ii++) {
+		double conf;
+		Rect detect_rect = face_detector.guessPeopleDetection(faceList.faces[ii], &conf);
+		detections.push_back(detect_rect);
+		response.push_back(1);
+	}
+
 	//filter the detection
 	if (detections.size()>0) {
 		vector<Rect> detection_bodysize;
@@ -538,11 +552,6 @@ void TrakerManager::doWork(Mat& frame)
 	// feed to heatMap
 	heatmap.feed(good_output);
 	heatmap.drawHeatImg(frame);
-
-	// detect face
-	face_detector.detect(frame);
-	if (show_face)
-		face_detector.drawDetection(frame);
 
 	// screen shot
 	if (_my_char == 'g') {

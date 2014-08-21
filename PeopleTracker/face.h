@@ -21,6 +21,7 @@ public:
 	~FaceDetector();
 	virtual void detect(const Mat& frame);
 	void drawDetection(Mat &frame);
+	Rect guessPeopleDetection(ppr_face_type face, double *conf = NULL);
 	ppr_face_list_type getDetections();
 private:
 	CascadeClassifier faceClassifier;

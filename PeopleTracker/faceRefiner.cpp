@@ -30,16 +30,6 @@ videoReader(seq_path_), resultReader(result_path_.c_str()), new_result_path(new_
 	_rmdir(clusterPath.c_str());
 }
 
-Rect box2rect(const Result2D *box)
-{
-	return Rect((int)(box->xc - box->w / 2), (int)(box->yc - box->h / 2), (int)box->w, (int)box->h);
-}
-
-Rect faceBox2rect(const ppr_face_attributes_type *attr) {
-	return Rect((int)(attr->position.x - attr->dimensions.width / 2), (int)(attr->position.y - attr->dimensions.height / 2),
-		(int)attr->dimensions.width, (int)attr->dimensions.height);
-}
-
 void FaceRefiner::associateFace(ppr_face_type face)
 {
 	ppr_face_attributes_type attr; 
@@ -55,11 +45,7 @@ void FaceRefiner::associateFace(ppr_face_type face)
 	face_rect = faceBox2rect(&attr);
 
 	// Add it as a detection
-	Rect detect_rect = face_rect;
-	detect_rect.x -= face_rect.width;
-	detect_rect.y -= 10;
-	detect_rect.height *= 7;
-	detect_rect.width *= 3;
+	Rect detect_rect = detector.guessPeopleDetection(face);
 	weakDetectionInTheFrame.push_back(detect_rect);
 
 	int max_ratio_tracker_id = -1;
@@ -190,9 +176,17 @@ void FaceRefiner::mergeTrackers()
 	// Print cluster result
 	sdk_print_utils_print_cluster_list(cluster_list);
 
+	// Apply merge result
+	for (int i = 0; i < cluster_list.length; i++) {
+		ppr_id_list_type clusteri = cluster_list.clusters[i];
+		for (int j = 1; j < clusteri.length; j++) {
+			merge(clusteri.ids[0], clusteri.ids[j]);
+		}
+	}
+
 	// Calc link,
 	// First get subject list
-
+	/*
 	if ((r = ppr_get_subject_id_list(ppr_context, gallery, &sublist)) != PPR_SUCCESS) {
 		cout << "mergeTrackers:ppr_get_subject_id_list: " << ppr_error_message(r) << endl;
 	}
@@ -203,7 +197,21 @@ void FaceRefiner::mergeTrackers()
 			cout << "Subject " << sublist.ids[i] << " and subject " << sublist.ids[j] << " has " << nLink << " Links" << endl;
 		}
 	}
+	*/
 }	
+
+// Merge results of clusteri and clusterj
+void FaceRefiner::merge(int clusteri, int clusterj)
+{
+	RefinerTracker *cluster1 = &trackers[clusteri];
+	RefinerTracker *cluster2 = &trackers[clusterj];
+
+	for (int i = 0; i < cluster2->results.size(); i++) {
+		if (cluster2->results[i].valid && !cluster1->results[i].valid) {
+			cluster1->results[i] = cluster2->results[i];
+		}
+	}
+}
 
 static void writeFrameToXml(tinyxml2::XMLPrinter &printer, vector<Result2D> &results)
 {
@@ -250,7 +258,6 @@ void FaceRefiner::outputResults()
 		}
 		writeFrameToXml(printer, results);
 	}
-
 
 	printer.CloseElement();
 	FILE *file = fopen(new_result_path.c_str(), "w");

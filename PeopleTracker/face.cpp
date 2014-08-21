@@ -102,12 +102,12 @@ void FaceDetector::detect(const Mat &frame)
 		ppr_free_face_list(face_list);
 		detected = false;
 	}
-	
+
 	if ((err = cv2pprimg(frame, &image)) != PPR_SUCCESS) {
 		cout << ppr_error_message(err) << endl;
 		return;
 	}
-	
+
 	if ((err = ppr_detect_faces(ppr_context, image, &face_list)) != PPR_SUCCESS) {
 		cout << ppr_error_message(err) << endl;
 		return;
@@ -116,7 +116,6 @@ void FaceDetector::detect(const Mat &frame)
 	detected = true;
 	ppr_free_image(image);
 }
-
 
 ppr_error_type cv2pprimg(const Mat &frame, ppr_image_type *image)
 {
@@ -152,6 +151,27 @@ void FaceDetector::drawDetection(Mat &frame)
 
 	ppr_free_image(temp_image);
 	ppr_free_image(image);
+}
+
+Rect FaceDetector::guessPeopleDetection(ppr_face_type face, double *conf = NULL)
+{
+	Rect face_rect;
+	ppr_face_attributes_type attr;
+	ppr_error_type r;
+	if ((r = ppr_get_face_attributes(face, &attr)) != PPR_SUCCESS) {
+		cout << "guessPeopleDetection:ppr_get_face_attributes: " << ppr_error_message(r) << endl;
+	}
+	face_rect = faceBox2rect(&attr);
+	Rect detect_rect = face_rect;
+	detect_rect.x -= face_rect.width;
+	detect_rect.y -= 10;
+	detect_rect.height *= 7;
+	detect_rect.width *= 3;
+
+	if (conf != NULL)
+		*conf = attr.confidence;
+
+	return detect_rect;
 }
 
 bool ppr2cvimg(ppr_image_type *image, Mat &frame)

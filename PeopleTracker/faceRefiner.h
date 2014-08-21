@@ -32,6 +32,7 @@ public:
 	FaceRefiner::~FaceRefiner();
 	void solve();
 private:
+	void merge(int clusteri, int clusterj);
 	void readFaceList(int frame, ppr_face_list_type *face_list);
 	void writeFaceList(int frame, ppr_face_list_type face_list);
 	void printGalleryFaceNum();
@@ -60,6 +61,7 @@ private:
 	vector<Rect> faceRectInTheFrame;
 	vector<int> assocInTheFrame;
 	vector<Rect> weakDetectionInTheFrame;
+	vector<Result2D> weakResults;
 
 	vector<RefinerFace> allFaces;
 

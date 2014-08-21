@@ -78,6 +78,9 @@
     <ClCompile Include="utilities\sdk_utils.c">
       <Filter>Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="benchmark.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appTemplate.h">
@@ -151,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="utilities\sdk_utils.h">
       <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="benchmark.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

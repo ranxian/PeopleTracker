@@ -159,6 +159,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="appTemplate.cpp" />
+    <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="dataReader.cpp" />
     <ClCompile Include="detector.cpp" />
     <ClCompile Include="face.cpp" />
@@ -179,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appTemplate.h" />
+    <ClInclude Include="benchmark.h" />
     <ClInclude Include="dataReader.h" />
     <ClInclude Include="detector.h" />
     <ClInclude Include="face.h" />
