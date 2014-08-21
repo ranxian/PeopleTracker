@@ -81,6 +81,9 @@
     <ClCompile Include="benchmark.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="xmlHelper.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appTemplate.h">
@@ -156,6 +159,9 @@
       <Filter>Utilities</Filter>
     </ClInclude>
     <ClInclude Include="benchmark.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="xmlHelper.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

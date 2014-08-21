@@ -177,6 +177,7 @@
     <ClCompile Include="utilities\sdk_print_utils.c" />
     <ClCompile Include="utilities\sdk_profile_timers.c" />
     <ClCompile Include="utilities\sdk_utils.c" />
+    <ClCompile Include="xmlHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appTemplate.h" />
@@ -204,6 +205,7 @@
     <ClInclude Include="utilities\sdk_profile_timers.h" />
     <ClInclude Include="utilities\sdk_utilities.h" />
     <ClInclude Include="utilities\sdk_utils.h" />
+    <ClInclude Include="xmlHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.txt" />
