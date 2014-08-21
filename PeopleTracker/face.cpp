@@ -95,8 +95,6 @@ void FaceDetector::detect(const Mat &frame)
 {
 	ppr_image_type image;
 	ppr_error_type err;
-	ppr_face_attributes_type face_attr;
-	ppr_face_type face;
 
 	if (detected) {
 		ppr_free_face_list(face_list);
@@ -136,7 +134,6 @@ void FaceDetector::drawDetection(Mat &frame)
 	ppr_image_type image;
 	ppr_image_type temp_image;
 	sdk_draw_utils_line_attributes_type line_attr;
-	ppr_face_attributes_type face_attr;
 	line_attr.color = SDK_DRAW_UTILS_GREEN;
 	line_attr.line_type = SDK_DRAW_UTILS_SOLID_LINE;
 	line_attr.thickness = 3;
@@ -153,7 +150,7 @@ void FaceDetector::drawDetection(Mat &frame)
 	ppr_free_image(image);
 }
 
-Rect FaceDetector::guessPeopleDetection(ppr_face_type face, double *conf = NULL)
+Rect FaceDetector::guessPeopleDetection(ppr_face_type face, double *conf)
 {
 	Rect face_rect;
 	ppr_face_attributes_type attr;
@@ -204,4 +201,9 @@ int getGalleryFaceNum(ppr_gallery_type gallery)
 	} else {
 		return ilist.length;
 	}
+}
+
+Rect faceBox2rect(const ppr_face_attributes_type *attr) {
+	return Rect((int)(attr->position.x - attr->dimensions.width / 2), (int)(attr->position.y - attr->dimensions.height / 2),
+		(int)attr->dimensions.width, (int)attr->dimensions.height);
 }

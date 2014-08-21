@@ -256,8 +256,8 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 	}
 
 	//deal with experts
-	int hp_size = expert_class.size();
-	int dt_size = detections.size();
+	int hp_size = (int)expert_class.size();
+	int dt_size = (int)detections.size();
 	if (dt_size*hp_size>0) {
 		Matrix<double> matrix(dt_size, hp_size + dt_size);
 		vector<bool> indicator;
@@ -319,8 +319,8 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 		detection_left = detections;
 
 	//deal with novice class
-	dt_size = detection_left.size();
-	hp_size = novice_class.size();
+	dt_size = (int)detection_left.size();
+	hp_size = (int)novice_class.size();
 	if (dt_size*hp_size>0) {
 		Matrix<double> matrix(dt_size, hp_size + dt_size);
 		for (int i = 0; i<dt_size; i++) {

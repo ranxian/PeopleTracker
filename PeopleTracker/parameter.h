@@ -45,4 +45,6 @@ extern int show_detection;
 extern int HEAT_RADIUS;
 // Framesize
 extern cv::Size FRAME_SIZE;
+// Video ratio
+extern int LOG_FACE_TO_TRACK_RATIO;
 #endif

@@ -142,5 +142,5 @@ private:
 	FILE *file;
 };
 
-
+Rect box2rect(const Result2D *box);
 #endif

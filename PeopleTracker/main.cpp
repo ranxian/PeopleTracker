@@ -31,6 +31,7 @@ double HOG_DETECT_FRAME_RATIO;
 Size FRAME_SIZE;
 // Display set
 int show_detection = 0;
+int LOG_FACE_TO_TRACK_RATIO = 1;
 
 // Heat map
 int HEAT_RADIUS;
@@ -186,8 +187,8 @@ void playResult()
 	XMLBBoxReader boxReader(_result_xml_file_.c_str());
 	vector<Result2D> result;
 	VideoCapture cap(_sequence_path_);
-	int width = cap.get(CV_CAP_PROP_FRAME_WIDTH);
-	int height = cap.get(CV_CAP_PROP_FRAME_HEIGHT);
+	int width = (int)cap.get(CV_CAP_PROP_FRAME_WIDTH);
+	int height = (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT);
 	Mat frame;
 	Mat heatImg;
 	Heatmap hmap(height, width);
@@ -228,10 +229,10 @@ int main(int argc,char** argv)
 
 	read_config();
 
-	if (!init_ppr_sdk()) {
-		cout << "can't init pitt patt, quit" << endl;
-		exit(-1);
-	}
+	//if (!init_ppr_sdk()) {
+	//	cout << "can't init pitt patt, quit" << endl;
+	//	exit(-1);
+	//}
 
 	if (option == 2) {
 		cout << "Make sure the video is in the Data directory" << endl
@@ -267,11 +268,12 @@ int main(int argc,char** argv)
 		FaceRefiner refiner(_sequence_path_, _result_xml_file_, new_result_xml_path);
 		refiner.solve();
 	} else if (option == 4) {
+		LOG_FACE_TO_TRACK_RATIO = 2;
 		BenchmarkRunner runner;
 		runner.run();
 	}
 
-	finalize_sdk();
+	// finalize_sdk();
 
 	return 0;
 }

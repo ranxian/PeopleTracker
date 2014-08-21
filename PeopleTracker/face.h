@@ -31,4 +31,6 @@ private:
 
 	ppr_face_list_type face_list;
 };
+
+Rect faceBox2rect(const ppr_face_attributes_type *attr);
 #endif

@@ -201,3 +201,8 @@ bool XMLBBoxWriter::putNextFrameResult(vector<Result2D>& result)
 	frameCount++;
 	return true;
 }
+
+Rect box2rect(const Result2D *box)
+{
+	return Rect((int)(box->xc - box->w / 2), (int)(box->yc - box->h / 2), (int)box->w, (int)box->h);
+}

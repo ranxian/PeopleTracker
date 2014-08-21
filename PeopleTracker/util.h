@@ -151,14 +151,4 @@ inline bool fexists(string filename)
 	return !!ifile;
 }
 
-
-Rect box2rect(const Result2D *box)
-{
-	return Rect((int)(box->xc - box->w / 2), (int)(box->yc - box->h / 2), (int)box->w, (int)box->h);
-}
-
-Rect faceBox2rect(const ppr_face_attributes_type *attr) {
-	return Rect((int)(attr->position.x - attr->dimensions.width / 2), (int)(attr->position.y - attr->dimensions.height / 2),
-		(int)attr->dimensions.width, (int)attr->dimensions.height);
-}
 #endif
