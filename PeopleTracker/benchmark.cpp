@@ -18,7 +18,7 @@ string BenchmarkRunner::getGoldPath(const char *testname)
 }
 string BenchmarkRunner::getVideoPath(const char *testname)
 {
-	return string(BDIR) + "\\" + XMLPFX + testname + ".avi";
+	return string(BDIR) + "\\" + testname + ".avi";
 }
 string BenchmarkRunner::getDetectPath(const char *testname)
 {
@@ -31,7 +31,7 @@ string BenchmarkRunner::getResultPath(const char *testname)
 
 void BenchmarkRunner::run()
 {
-	LOG_FACE_TO_TRACK_RATIO = 3;
+	LOG_FACE_TO_TRACK_RATIO = 2;
 	cout << "Tracker location test" << endl;
 
 	// First ask if result exist
@@ -46,9 +46,10 @@ void BenchmarkRunner::run()
 	}
 
 	// Test location
-	testLocation();
+	// testLocation();
 	cout << "----" << endl << "Tracker staying time test" << endl;
 	// Test staying
+	testStay();
 }
 
 void BenchmarkRunner::testLocation()
@@ -57,27 +58,44 @@ void BenchmarkRunner::testLocation()
 		for (int i = 0; i < nLocTest; i++) {
 			char *testname = locTestList[i];
 			cout << "Test: " << testname << endl;
-			string videoPath = getVideoPath(testname);
-			string xmlPath = getDetectPath(testname);
-			string resultPath = getResultPath(testname);
-			if (!fexists(videoPath))
-				cout << "video " + videoPath + " not exist" << endl;
-			if (!fexists(xmlPath))
-				cout << "xml file " << xmlPath << " not exist" << endl;
 
 			// Run tracker
-			runTracker(videoPath.c_str(), xmlPath.c_str(), resultPath.c_str());
+			runTracker(testname);
 		}
 	}
 
 	getLocationScore();
 }
 
-// Run tracker for one instance
-void BenchmarkRunner::runTracker(const char *videoFilePath, const char *xmlFilePath, const char *resultFilePath)
+void BenchmarkRunner::testStay()
 {
-	VideoReader *reader = new VideoReader(videoFilePath);
-	XMLDetector *detector = new XMLDetector(xmlFilePath);
+	//if (!has_result) {
+		for (int ntest = 0; ntest < nStayTest; ntest++) {
+			char *testname = stayTestList[ntest];
+			cout << "Test: " << testname << endl;
+			runTracker(testname);
+		}
+	//}
+}
+
+void BenchmarkRunner::getStayScore()
+{
+
+}
+
+// Run tracker for one instance
+void BenchmarkRunner::runTracker(const char *testname)
+{
+	string videoPath = getVideoPath(testname);
+	string xmlPath = getDetectPath(testname);
+	string resultPath = getResultPath(testname);
+	if (!fexists(videoPath))
+		cout << "video " + videoPath + " not exist" << endl;
+	if (!fexists(xmlPath))
+		cout << "xml file " << xmlPath << " not exist" << endl;
+
+	VideoReader *reader = new VideoReader(videoPath);
+	XMLDetector *detector = new XMLDetector(xmlPath.c_str());
 	Mat frame;
 	Mat drawFrame;
 	FRAME_SIZE = reader->getFrameSize();
@@ -85,7 +103,7 @@ void BenchmarkRunner::runTracker(const char *videoFilePath, const char *xmlFileP
 	mTrack.toggleDrawDetection();
 	mTrack.toggleShowFace();
 
-	FILE *file = fopen(resultFilePath, "w");
+	FILE *file = fopen(resultPath.c_str(), "w");
 	int totalFrame = reader->getFrameCount();
 
 	tinyxml2::XMLPrinter printer(file);
@@ -97,12 +115,12 @@ void BenchmarkRunner::runTracker(const char *videoFilePath, const char *xmlFileP
 		mTrack.doWork(frame);
 		writeFrameToXml(printer, mTrack.getCurrentFrameResult());
 		//pyrDown(frame, drawFrame);
-		//imshow("s", drawFrame);
+		//imshow("s", frame);
 
 		printf("%d/%d\r", frameCnt, totalFrame);
 
-		//waitKey(10);
 		reader->readImg(frame);
+		//waitKey(10);
 	}
 	printer.CloseElement();
 	fprintf(file, printer.CStr());
@@ -155,8 +173,8 @@ void BenchmarkRunner::getLocationScore()
 				putText(frame, std::to_string(r2d.id), rect.tl(), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(255, 255, 255));
 			}
 
-			imshow("benchmark", frame);
-			waitKey(0);
+			//imshow("benchmark", frame);
+			//waitKey(0);
 		}
 
 		fclose(file);

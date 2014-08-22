@@ -408,12 +408,12 @@ void TrakerManager::doWork(Mat& frame)
 
 	// Add face detection
 	// detect face
+	
 	face_detector.detect(origFrame);
 	ppr_face_list_type faceList = face_detector.getDetections();
-	if (show_face) {
-		face_detector.drawDetection(origFrame);
-	}
-		
+
+	cout << faceList.length << " face detected" << endl;
+
 	for (int ii = 0; ii < faceList.length; ii++) {
 		double conf;
 		Rect detect_rect = face_detector.guessPeopleDetection(faceList.faces[ii], &conf);

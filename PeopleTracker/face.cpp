@@ -123,6 +123,7 @@ ppr_error_type cv2pprimg(const Mat &frame, ppr_image_type *image)
 	raw_img = convert_opencv_image_to_ppr(&iplimg);
 
 	err = ppr_create_image(raw_img, image);
+	ppr_raw_image_free(raw_img);
 
 	return err;
 }
@@ -145,6 +146,8 @@ void FaceDetector::drawDetection(Mat &frame)
 
 	ppr_create_image(raw_image, &temp_image);
 	ppr2cvimg(&temp_image, frame);
+	ppr_raw_image_free(raw_image);
+
 
 	ppr_free_image(temp_image);
 	ppr_free_image(image);
