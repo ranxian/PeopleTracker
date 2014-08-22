@@ -10,6 +10,7 @@
 #include "multiTrackAssociation.h"
 #include "xmlHelper.h"
 #include "tinyxml2.h"
+#include "faceRefiner.h"
 
 
 string BenchmarkRunner::getGoldPath(const char *testname)
@@ -32,8 +33,18 @@ string BenchmarkRunner::getResultPath(const char *testname)
 void BenchmarkRunner::run()
 {
 	LOG_FACE_TO_TRACK_RATIO = 2;
-	cout << "Tracker location test" << endl;
 
+	cout << "Tracker location test" << endl;
+	// Test location
+	testLocation();
+	cout << "-----------------" << endl << "Tracker staying time test" << endl;
+	// Test staying
+	testStay();
+}
+
+void BenchmarkRunner::testLocation()
+{
+	bool has_result;
 	// First ask if result exist
 	cout << "has result? (y/n)" << endl;
 	char h;
@@ -45,15 +56,6 @@ void BenchmarkRunner::run()
 		has_result = false;
 	}
 
-	// Test location
-	// testLocation();
-	cout << "----" << endl << "Tracker staying time test" << endl;
-	// Test staying
-	testStay();
-}
-
-void BenchmarkRunner::testLocation()
-{
 	if (!has_result) {
 		for (int i = 0; i < nLocTest; i++) {
 			char *testname = locTestList[i];
@@ -67,8 +69,72 @@ void BenchmarkRunner::testLocation()
 	getLocationScore();
 }
 
+// Get tracker location score
+void BenchmarkRunner::getLocationScore()
+{
+	for (int ntest = 0; ntest < nLocTest; ntest++) {
+		cout << "Getting score for " << locTestList[ntest] << endl;
+		char *testname = locTestList[ntest];
+		string goldPath = getGoldPath(testname);
+		string resultPath = getResultPath(testname);
+		string videoPath = getVideoPath(testname);
+		Mat frame;
+		XMLBBoxReader reader(resultPath.c_str());
+		VideoCapture cap(videoPath);
+		int frameno;
+		int nAnnoatete;
+
+		FILE *file = fopen(goldPath.c_str(), "r");
+
+		if (file == NULL) {
+			cout << "Gold file not exist" << endl;
+			return;
+		}
+
+		// Read groundtruth from gold data
+		while ((fscanf(file, "%d %d", &frameno, &nAnnoatete)) != EOF) {
+			int truth[10];
+			vector<Result2D> results;
+			for (int i = 0; i < nAnnoatete; i++) {
+				fscanf(file, "%d", &truth[i]);
+			}
+
+			// Read video
+			cap.set(CV_CAP_PROP_POS_FRAMES, (double)frameno);
+			cap.read(frame);
+
+			// Find results for @frameno
+			reader.getResultForFrame(results, frameno);
+			for (Result2D r2d : results) {
+				Rect rect = box2rect(&r2d);
+				rectangle(frame, rect, Scalar(255, 0, 0), 3);
+				putText(frame, std::to_string(r2d.id), rect.tl(), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(255, 255, 255));
+			}
+
+			//imshow("benchmark", frame);
+			//waitKey(0);
+		}
+
+		fclose(file);
+	}
+}
+
 void BenchmarkRunner::testStay()
 {
+	cout << "Tracker location test" << endl;
+
+	bool has_result;
+	// First ask if result exist
+	cout << "has result? (y/n)" << endl;
+	char h;
+	cin >> h;
+
+	if (h == 'y' || h == 'Y') {
+		has_result = true;
+	} else {
+		has_result = false;
+	}
+
 	//if (!has_result) {
 		for (int ntest = 0; ntest < nStayTest; ntest++) {
 			char *testname = stayTestList[ntest];
@@ -94,6 +160,8 @@ void BenchmarkRunner::runTracker(const char *testname)
 	if (!fexists(xmlPath))
 		cout << "xml file " << xmlPath << " not exist" << endl;
 
+	// 1. Do multi track, use face detection to help
+	cout << "Running tracker..." << endl;
 	VideoReader *reader = new VideoReader(videoPath);
 	XMLDetector *detector = new XMLDetector(xmlPath.c_str());
 	Mat frame;
@@ -128,55 +196,18 @@ void BenchmarkRunner::runTracker(const char *testname)
 
 	delete reader;
 	delete detector;
-}
 
-// Get tracker location score
-void BenchmarkRunner::getLocationScore()
-{
-	for (int ntest = 0; ntest < nLocTest; ntest++) {
-		cout << "Getting score for " << locTestList[ntest] << endl;
-		char *testname = locTestList[ntest];
-		string goldPath = getGoldPath(testname);
-		string resultPath = getResultPath(testname);
-		string videoPath = getVideoPath(testname);
-		Mat frame;
-		XMLBBoxReader reader(resultPath.c_str());
-		VideoCapture cap(videoPath);
-		int frameno;
-		int nAnnoatete;
+	// 2. Smooth the image using python script
+	cout << "Running smoother..." << endl;
+	system((string("python") + " " + PYPATH + " " + resultPath + " " + resultPath).c_str());
 
-		FILE *file = fopen(goldPath.c_str(), "r");
+	// 3. Use face refiner
+	cout << "Running face refiner..." << endl;
+	FaceRefiner refiner(videoPath, resultPath, resultPath, true);
+	refiner.benchmarking = true;
+	refiner.hasResult = false;
+	refiner.solve();
 
-		if (file == NULL) {
-			cout << "Gold file not exist" << endl;
-			return;
-		}
-
-		// Read groundtruth from gold data
-		while ((fscanf(file, "%d %d", &frameno, &nAnnoatete)) != EOF) {
-			int truth[10];
-			vector<Result2D> results;
-			cout << frameno << " " << nAnnoatete << endl;
-			for (int i = 0; i < nAnnoatete; i++) {
-				fscanf(file, "%d", &truth[i]);
-			}
-			
-			// Read video
-			cap.set(CV_CAP_PROP_POS_FRAMES, (double)frameno);
-			cap.read(frame);
-
-			// Find results for @frameno
-			reader.getResultForFrame(results, frameno);
-			for (Result2D r2d : results) {
-				Rect rect = box2rect(&r2d);
-				rectangle(frame, rect, Scalar(255, 0, 0), 3);
-				putText(frame, std::to_string(r2d.id), rect.tl(), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(255, 255, 255));
-			}
-
-			//imshow("benchmark", frame);
-			//waitKey(0);
-		}
-
-		fclose(file);
-	}
+	// 4. Smooth again
+	system((string("python") + " " + PYPATH + " " + resultPath + " " + resultPath).c_str());
 }

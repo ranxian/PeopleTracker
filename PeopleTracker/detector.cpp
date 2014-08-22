@@ -130,7 +130,9 @@ void XMLDetector::detect(const Mat& f)
 		}
 		frame = frame->NextSiblingElement("frame");
 	} else {
+#ifdef DEBUG
 		cout << "No detections in the frame" << endl;
+#endif
 	}
 }
 

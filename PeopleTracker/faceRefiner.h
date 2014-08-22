@@ -28,9 +28,11 @@ public:
 class FaceRefiner
 {
 public:
-	FaceRefiner(string seq_path_, string result_path_, string new_result_path_);
+	FaceRefiner(string seq_path_, string result_path_, string new_result_path_, bool benchmarking=false);
 	FaceRefiner::~FaceRefiner();
 	void solve();
+	bool benchmarking;
+	bool hasResult;
 private:
 	void merge(int clusteri, int clusterj);
 	void readFaceList(int frame, ppr_face_list_type *face_list);
@@ -65,7 +67,6 @@ private:
 
 	vector<RefinerFace> allFaces;
 
-	bool hasResult;
 	string rootPath;
 	string clusterPath;
 };

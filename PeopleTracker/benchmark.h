@@ -6,6 +6,7 @@ using namespace std;
 
 #define BDIR "benchmark"
 #define XMLPFX "s-"
+#define PYPATH "benchmark\\process_result.py"
 
 static char *locTestList[] = {
 	"location-one-1"
@@ -31,7 +32,6 @@ private:
 	std::string getVideoPath(const char *testname);
 	std::string getResultPath(const char *testname);
 	string getDetectPath(const char *testname);
-	bool has_result;
 };
 
 #endif

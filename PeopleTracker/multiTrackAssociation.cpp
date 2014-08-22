@@ -412,8 +412,6 @@ void TrakerManager::doWork(Mat& frame)
 	face_detector.detect(origFrame);
 	ppr_face_list_type faceList = face_detector.getDetections();
 
-	cout << faceList.length << " face detected" << endl;
-
 	for (int ii = 0; ii < faceList.length; ii++) {
 		double conf;
 		Rect detect_rect = face_detector.guessPeopleDetection(faceList.faces[ii], &conf);
@@ -424,8 +422,20 @@ void TrakerManager::doWork(Mat& frame)
 			detect_rect.height /= 2;
 			detect_rect.width /= 2;
 		}
-		detections.push_back(detect_rect);
-		response.push_back(1);
+		// Check if heavily overlap with others
+		bool overlap;
+		for (auto det : detections) {
+			Rect inter = det & detect_rect;
+			if (inter.area() / det.area() > 0.9 ||
+				inter.area() / det.area() > 0.9) {
+				overlap = true;
+				break;
+			}
+		}
+		if (!overlap) {
+			detections.push_back(detect_rect);
+			response.push_back(6);
+		}
 	}
 
 	//filter the detection

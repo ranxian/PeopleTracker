@@ -6,20 +6,22 @@
 #include <stdio.h>
 #include "utilities/sdk_utilities.h"
 
-FaceRefiner::FaceRefiner(string seq_path_, string result_path_, string new_result_path_) :
+FaceRefiner::FaceRefiner(string seq_path_, string result_path_, string new_result_path_, bool benchmarking) :
 videoReader(seq_path_), resultReader(result_path_.c_str()), new_result_path(new_result_path_), frameCnt(0), faceCnt(0)
 {
 	ppr_error_type r;
 	if ((r = ppr_create_gallery(ppr_context, &gallery)) != PPR_SUCCESS) {
 		cout << "FaceRefiner: " << ppr_error_message(r) << endl;
 	}
-	cout << "Has result? (y/n)" << endl;
-	char ans;
-	cin >> ans;
-	if (ans == 'Y' || ans == 'y')
-		hasResult = true;
-	else
-		hasResult = false;
+	if (!benchmarking) {
+		cout << "Has result? (y/n)" << endl;
+		char ans;
+		cin >> ans;
+		if (ans == 'Y' || ans == 'y')
+			hasResult = true;
+		else
+			hasResult = false;
+	}
 
 	// Create data dir
 	rootPath =  getBaseName(seq_path_);
@@ -28,6 +30,8 @@ videoReader(seq_path_), resultReader(result_path_.c_str()), new_result_path(new_
 	// Remove cluster dir
 	clusterPath = rootPath + "\\" + "cluster";
 	_rmdir(clusterPath.c_str());
+
+	benchmarking = false;
 }
 
 void FaceRefiner::associateFace(ppr_face_type face)
@@ -134,24 +138,25 @@ void FaceRefiner::mergeTrackers()
 	}
 
 	// Print subject templates
-	int subject_temp_count[110] = {};
-	for (int i = 0; i < allFaces.size(); i++) {
-		for (int j = 0; j < sublist.length; j++) {
-			if (sublist.ids[j] == allFaces[i].subjectID) {
-				int hs = 0;
-				if ((r = ppr_face_has_template(ppr_context, allFaces[i].face, &hs)) != PPR_SUCCESS) {
-					cout << "mergeTrackers:ppr_face_has_template: " << ppr_error_message(r) << endl;
-				}
-				if (hs) {
-					cout << "sub " << sublist.ids[j] << " has temp" << endl;
-					subject_temp_count[sublist.ids[j]]++;
+	if (!benchmarking) {
+		int subject_temp_count[110] = {};
+		for (int i = 0; i < allFaces.size(); i++) {
+			for (int j = 0; j < sublist.length; j++) {
+				if (sublist.ids[j] == allFaces[i].subjectID) {
+					int hs = 0;
+					if ((r = ppr_face_has_template(ppr_context, allFaces[i].face, &hs)) != PPR_SUCCESS) {
+						cout << "mergeTrackers:ppr_face_has_template: " << ppr_error_message(r) << endl;
+					}
+					if (hs) {
+						cout << "sub " << sublist.ids[j] << " has temp" << endl;
+						subject_temp_count[sublist.ids[j]]++;
+					}
 				}
 			}
 		}
-	}
-
-	for (int i = 0; i < sublist.length; i++) {
-		cout << "Subject " << sublist.ids[i] << " has " << subject_temp_count[sublist.ids[i]] << " templates" << endl;
+		for (int i = 0; i < sublist.length; i++) {
+			cout << "Subject " << sublist.ids[i] << " has " << subject_temp_count[sublist.ids[i]] << " templates" << endl;
+		}
 	}
 
 	if ((r = ppr_get_subject_id_list(ppr_context, gallery, &id_list)) != PPR_SUCCESS) {
@@ -265,10 +270,13 @@ void FaceRefiner::outputResults()
 		cout << "Can't open file " << new_result_path << " for writing result" << endl;
 	}
 	fprintf(file, printer.CStr());
+	fclose(file);
 
 	//  Write cluster result
-	sdk_utils_make_directory(clusterPath.c_str());
-	sdk_utils_write_cluster_thumbnails(clusterPath.c_str(), ppr_context, gallery, cluster_list);
+	if (!this->benchmarking) {
+		sdk_utils_make_directory(clusterPath.c_str());
+		sdk_utils_write_cluster_thumbnails(clusterPath.c_str(), ppr_context, gallery, cluster_list);
+	}
 }
 
 void FaceRefiner::printGalleryFaceNum()
@@ -401,12 +409,14 @@ void FaceRefiner::solve()
 			ppr_free_image(image);
 		}
 
-		drawTrackerWithFace();
+		if (!benchmarking) {
+			drawTrackerWithFace();
 
-		char key;
-		key = waitKey(10);
-		if (key == 'q')
-			break;
+			char key;
+			key = waitKey(10);
+			if (key == 'q')
+				break;
+		}
 
 		cout << "----------------------------------" << endl;
 	}
