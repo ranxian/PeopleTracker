@@ -93,6 +93,10 @@ void multiTrack(int readerType,int detectorType)
 				  reader = new VideoReader(_sequence_path_);
 				  VideoCapture cap(_sequence_path_);
 				  FRAME_SIZE = Size((int)cap.get(CV_CAP_PROP_FRAME_WIDTH), (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT));
+				  for (int k = 0; k < LOG_FACE_TO_TRACK_RATIO - 1; k++) {
+					  FRAME_SIZE.width /= 2;
+					  FRAME_SIZE.height /= 2;
+				  }
 				  break;
 	}
 	default:
@@ -155,48 +159,9 @@ void multiTrack(int readerType,int detectorType)
 	delete detector;
 }
 
-void playResult()
-{
-	XMLBBoxReader boxReader(_result_xml_file_.c_str());
-	vector<Result2D> result;
-	VideoCapture cap(_sequence_path_);
-	int width = (int)cap.get(CV_CAP_PROP_FRAME_WIDTH);
-	int height = (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT);
-	Mat frame;
-	Mat heatImg;
-	Heatmap hmap(height, width);
-	namedWindow("Result");
-	namedWindow("Heatmap");
-	while (true) {
-		cap.read(frame);
-		if (frame.empty())
-			break;
-		boxReader.getNextFrameResult(result);
-		vector<Result2D>::iterator it;
-		for (it = result.begin(); it != result.end(); it++) {
-			Point p1((int)((*it).xc - (*it).w / 2), (int)((*it).yc - (*it).h / 2));
-			Point p2((int)((*it).xc + (*it).w / 2), (int)((*it).yc + (*it).h / 2));
-			rectangle(frame, p1, p2, COLOR((*it).id), 3);
-		}
-		hmap.feed(result);
-		hmap.drawHeatImg(frame);
-		imshow("Result", frame);
-		char key;
-		key = waitKey(60);
-		if (key == 'q')
-			break;
-		switch (key) {
-		case 'p':
-			while (waitKey(0) != 'p');
-		default:
-			break;
-		}
-	}
-}
-
 int main(int argc,char** argv)
 {
-	cout << "1: Play Result, 2: Run, 3: Face refine, 4: Benchmark" << endl;
+	cout << "1: Play Result, 2: Run, 3: Face refine, 4: Benchmark, 5: Play Benchmark Result" << endl;
 	int option;
 	cin >> option;
 
@@ -218,30 +183,40 @@ int main(int argc,char** argv)
 		string videoName;
 		cin >> videoName;
 		string baseName = getBaseName(videoName);
-		_sequence_path_ = "tracker\\" + videoName;
-		_detection_xml_file_ = "tracker\\" + baseName + ".xml";
-		result_output_xmlpath = "tracker\\" + baseName + "-result.xml";
+		_sequence_path_ = "benchmark\\" + videoName;
+		_detection_xml_file_ = "benchmark\\" + baseName + ".xml";
+		result_output_xmlpath = "benchmark\\" + baseName + "-result.xml";
+		LOG_FACE_TO_TRACK_RATIO = 2;
 		multiTrack(VIDEO, XML);
 	} else if (option == 1) {
 		cout << "Enter video name: ";
 		string videoName;
 		cin >> videoName;
-		_sequence_path_ = "tracker\\" + videoName;
-		_result_xml_file_ = "tracker\\" + getBaseName(videoName) + "-result.xml";
+		_sequence_path_ = "benchmark\\" + videoName;
+		_result_xml_file_ = "benchmark\\" + getBaseName(videoName) + "-result.xml";
 		cout << _result_xml_file_ << endl;
-		playResult();
+		playResult(_sequence_path_, _result_xml_file_, 2);
 	} else if (option == 3) {
+		LOG_FACE_TO_TRACK_RATIO = 1;
+
 		cout << "Enter video name: ";
 		string videoName;
 		cin >> videoName;
-		_sequence_path_ = "tracker\\" + videoName;
-		_result_xml_file_ = "tracker\\" + getBaseName(videoName) + "-result.xml";
-		string new_result_xml_path = "tracker\\" + getBaseName(videoName) + "-result-new.xml";
+
+		string prefix = "benchmark";
+
+		_sequence_path_ = prefix + "\\" + videoName;
+		_result_xml_file_ = prefix + "\\" + getBaseName(videoName) + "-result.xml";
+		string new_result_xml_path = prefix + "\\" + getBaseName(videoName) + "-result-new.xml";
 		FaceRefiner refiner(_sequence_path_, _result_xml_file_, new_result_xml_path);
 		refiner.solve();
+		playResult(_sequence_path_, new_result_xml_path, 2);
 	} else if (option == 4) {
 		BenchmarkRunner runner;
 		runner.run();
+	} else if (option == 5) {
+		BenchmarkRunner runner;
+		runner.playBenchmarkResult();
 	}
 
 	finalize_sdk();

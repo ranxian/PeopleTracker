@@ -165,8 +165,8 @@ Rect FaceDetector::guessPeopleDetection(ppr_face_type face, double *conf)
 	Rect detect_rect = face_rect;
 	detect_rect.x -= face_rect.width;
 	detect_rect.y -= 10;
-	detect_rect.height *= 6.5;
-	detect_rect.width *= 3;
+	detect_rect.height *= 5;
+	detect_rect.width *= 2;
 
 	if (conf != NULL)
 		*conf = attr.confidence;

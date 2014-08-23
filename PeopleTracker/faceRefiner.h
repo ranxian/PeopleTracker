@@ -3,7 +3,7 @@
 #include "face.h"
 #include "tracker.h"
 #define REFINER_MAX_TRACKER_NUM 20
-#define REFINER_FACE_ASSOC_THRES 0.8
+#define REFINER_FACE_ASSOC_THRES 0.6
 #define REFINER_REP_FACE_NUM 5
 #define REFINER_CLUSTER_AGGR 6
 #define REFINER_UNKOWN_SUBJECT_ID 100
@@ -19,10 +19,11 @@ public:
 class RefinerFace
 {
 public:
-	RefinerFace(ppr_face_type face_, int faceID_, int subjectID_) : face(face_), faceID(faceID_), subjectID(subjectID_) {};
+	RefinerFace(ppr_face_type face_, int faceID_, int subjectID_) : face(face_), faceID(faceID_), subjectID(subjectID_), hasTemp(0) {};
 	ppr_face_type face;
 	int faceID;
 	int subjectID;
+	bool hasTemp;
 };
 
 class FaceRefiner
@@ -61,6 +62,7 @@ private:
 	Mat frame;
 
 	vector<Rect> faceRectInTheFrame;
+	vector<bool> faceHasTempInTheFrame;
 	vector<int> assocInTheFrame;
 	vector<Rect> weakDetectionInTheFrame;
 	vector<Result2D> weakResults;

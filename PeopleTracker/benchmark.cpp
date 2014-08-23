@@ -166,10 +166,9 @@ void BenchmarkRunner::runTracker(const char *testname)
 	XMLDetector *detector = new XMLDetector(xmlPath.c_str());
 	Mat frame;
 	Mat drawFrame;
+	Mat initFrame;
 	FRAME_SIZE = reader->getFrameSize();
-	TrakerManager mTrack(detector, frame, EXPERT_THRESH);
-	mTrack.toggleDrawDetection();
-	mTrack.toggleShowFace();
+	
 
 	FILE *file = fopen(resultPath.c_str(), "w");
 	int totalFrame = reader->getFrameCount();
@@ -179,27 +178,36 @@ void BenchmarkRunner::runTracker(const char *testname)
 	printer.OpenElement("dataset");
 
 	reader->readImg(frame);
+	cv::namedWindow("tracker");
+
+	frame.copyTo(initFrame);
+	for (int k = 0; k < LOG_FACE_TO_TRACK_RATIO - 1; k++)
+		pyrDown(initFrame, initFrame);
+	TrakerManager mTrack(detector, frame, EXPERT_THRESH);
+	mTrack.toggleDrawDetection();
+	mTrack.toggleShowFace();
 	for (int frameCnt = 0; frame.data != NULL; frameCnt++) {
 		mTrack.doWork(frame);
 		writeFrameToXml(printer, mTrack.getCurrentFrameResult());
 		//pyrDown(frame, drawFrame);
-		//imshow("s", frame);
+		//imshow("tracker", frame);
 
 		printf("%d/%d\r", frameCnt, totalFrame);
 
+		
+		waitKey(10); 
 		reader->readImg(frame);
-		//waitKey(10);
 	}
 	printer.CloseElement();
 	fprintf(file, printer.CStr());
 	fclose(file);
 
+	cv::destroyWindow("tracker");
 	delete reader;
 	delete detector;
 
 	// 2. Smooth the image using python script
-	cout << "Running smoother..." << endl;
-	system((string("python") + " " + PYPATH + " " + resultPath + " " + resultPath).c_str());
+	
 
 	// 3. Use face refiner
 	cout << "Running face refiner..." << endl;
@@ -209,5 +217,31 @@ void BenchmarkRunner::runTracker(const char *testname)
 	refiner.solve();
 
 	// 4. Smooth again
-	system((string("python") + " " + PYPATH + " " + resultPath + " " + resultPath).c_str());
+	cout << "Running smoother..." << endl;
+	// system((string("python") + " " + PYPATH + " " + resultPath + " " + resultPath).c_str());
+
+	// 5. Show final result for tracker
+	playResult(videoPath, resultPath, 1);
+}
+
+// Play results for all benchmarks, this can help for human to get score
+void BenchmarkRunner::playBenchmarkResult()
+{
+	for (int i = 0; i < nLocTest; i++) {
+		cout << i << ". " << locTestList[i] << endl;
+	}
+
+	for (int i = 0; i < nStayTest; i++) {
+		cout << i + nLocTest << ". " << stayTestList[i] << endl;
+	}
+
+	cout << "Which?" << endl;
+	int no;
+	cin >> no;
+	char *testname;
+	if (no >= nLocTest) {
+		testname = stayTestList[no - nLocTest];
+	} else {
+		testname = locTestList[no];
+	}
 }

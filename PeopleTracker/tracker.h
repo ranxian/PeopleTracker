@@ -45,6 +45,9 @@ public:
 	EnsembleTracker(int id, Size body_size, double phi1 = 0.5, double phi2 = 1.5, double phi_max = 4.0);
 	~EnsembleTracker();
 
+	Rect detectionInThisFrame;
+	bool hasDetection;
+
 	//reference counting
 	inline void refcAdd1(){ ++_refc; }
 	inline void refcDec1(){ --_refc; _refc = MAX(0, _refc); }
@@ -67,6 +70,7 @@ public:
 	void calcScore();//calculate each template's score
 	void deletePoorTemplate(double threshold);
 	void deletePoorestTemplate();
+	void deletePoorestNegTemplate();
 	void demote();
 	void promote();
 	void registerTrackResult();//record result window and the filtered one
@@ -110,7 +114,7 @@ public:
 				circle(frame, *it, 2, COLOR(_ID), -1);
 			}
 		} else
-			;//rectangle(frame, scaledWin,COLOR(_ID),1);
+			rectangle(frame, scaledWin,COLOR(_ID),1);
 
 		Size recSz = scaledWin.size();
 		Point buttom(scaledWin.br().x - recSz.width / 2, scaledWin.br().y);
@@ -119,6 +123,7 @@ public:
 	inline void drawAssRadius(Mat& frame)
 	{
 		Rect win = _result_temp;
+		cout << "radius is " << _match_radius << endl;
 		circle(frame, Point((int)(win.x + 0.5*win.width), (int)(win.y + 0.5*win.height)), (int)MAX(_match_radius, 0), COLOR(_ID), 1);
 	}
 
@@ -142,11 +147,14 @@ public:
 
 	inline void updateKfCov(double body_width)
 	{
-		Mat m_temp = *(Mat_<float>(4, 4) << 0.025, 0, 0, 0,
-			0, 0.025, 0, 0,
-			0, 0, 0.25, 0,
-			0, 0, 0, 0.25);
-		// _kf.processNoiseCov=m_temp*((float)body_width/FRAME_RATE)*((float)body_width/FRAME_RATE);
+		Mat m_temp = *(Mat_<float>(6, 6) << 
+			0.025, 0, 0, 0,0,0,
+			0, 0.025, 0, 0,0,0,
+			0, 0, 0.25, 0,0,0,
+			0, 0, 0, 0.25,0,0,
+			0, 0, 0, 0,   0,0,
+			0,0,0,0,0,0.0);
+		//_kf.processNoiseCov=m_temp*((float)body_width/FRAME_RATE*1.3)*((float)body_width/FRAME_RATE*1.3);
 		setIdentity(_kf.measurementNoiseCov, Scalar::all(1.0*(float)body_width*(float)body_width));
 	}
 
@@ -214,4 +222,7 @@ private:
 	// Faces that is considered to be for this tracker
 	vector<int> faceIds;
 };
+
+void playResult(string videoPath, string resultPath, int videoResultRatio, bool drawHeatMap = false);
+Result2D rect2Box(Rect rect);
 #endif

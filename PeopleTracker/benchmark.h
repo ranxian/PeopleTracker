@@ -5,13 +5,13 @@
 using namespace std;
 
 #define BDIR "benchmark"
-#define XMLPFX "s-"
+#define XMLPFX ""
 #define PYPATH "benchmark\\process_result.py"
 
 static char *locTestList[] = {
 	"location-one-1"
 };
-static int nLocTest = 1;
+static int nLocTest = 0;
 
 static char *stayTestList[] = {
 	"staying-1"
@@ -22,6 +22,7 @@ class BenchmarkRunner
 {
 public:
 	void run();
+	void playBenchmarkResult();
 private:
 	void testLocation();
 	void testStay();

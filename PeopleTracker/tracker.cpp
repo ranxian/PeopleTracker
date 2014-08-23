@@ -23,6 +23,7 @@
 ***************************************************************/
 
 #include "tracker.h"
+#include "heatmap.h"
 
 #define SCALE_UPDATE_RATE 0.6
 #define HIST_MATCH_UPDATE 0.01
@@ -90,6 +91,8 @@ _record_idx(0)
 
 	//for calculating hitting rate in a time window
 	_recentHitRecord = Mat::zeros(2, 4 * FRAME_RATE, CV_64FC1);
+
+	hasDetection = false;
 }
 EnsembleTracker::~EnsembleTracker()
 {
@@ -176,8 +179,8 @@ void EnsembleTracker::addAppTemplate(const Mat* frame_set, Rect iniWin)
 		_window_size.width = (float)iniWin.width;
 		_window_size.height = (float)iniWin.height;
 	} else {
-		if (abs((float)(detection_size.width - _window_size.width)) / _window_size.width > 0.2 ||
-			abs((float)(detection_size.height - _window_size.height)) / _window_size.height > 0.2) {
+		if (abs((float)(detection_size.width - _window_size.width)) / _window_size.width > 0.4 ||
+			abs((float)(detection_size.height - _window_size.height)) / _window_size.height > 0.4) {
 			// Too rediculous, Do nothing
 		} else {
 			_window_size.width = (float)(_window_size.width*(1 - SCALE_UPDATE_RATE) + detection_size.width*SCALE_UPDATE_RATE);
@@ -263,6 +266,7 @@ void EnsembleTracker::track(const Mat* frame_set, Mat& occ_map)
 
 	double alpha;
 	//matching radius updating
+	cout << "va1=" << _kf.errorCovPre.at<float>(0, 0) << endl;
 	alpha = MIN(_phi1_*sqrt(_kf.errorCovPre.at<float>(0, 0)) / (double)_result_bodysize_temp.width + _phi2_, _phi_max_);
 	_match_radius = alpha*_result_bodysize_temp.width;
 	Mat _confidence_map_roi;
@@ -280,14 +284,46 @@ void EnsembleTracker::track(const Mat* frame_set, Mat& occ_map)
 	cout << "Before shift (" << (iniWin + Point(_cm_win.x, _cm_win.y)).x << "," << (iniWin + Point(_cm_win.x, _cm_win.y)).y << ")" << endl;
 #endif
 	meanShift(_confidence_map, iniWin, TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1));
-#ifdef DEBUG
-	cout << "After shift (" << (iniWin + Point(_cm_win.x, _cm_win.y)).x << "," << (iniWin + Point(_cm_win.x, _cm_win.y)).y << ")" << endl;
-	cout << "Y changed: " << iniWin.y - before.y << endl;
-#endif
+	// cout << "After shift (" << (iniWin + Point(_cm_win.x, _cm_win.y)).x << "," << (iniWin + Point(_cm_win.x, _cm_win.y)).y << ")" << endl;
+
+	int yChange = (iniWin.y - before.y);
+
+	if (yChange > 2 || yChange < -2) {
+		if (yChange > 0)
+			iniWin.y = before.y + 1;
+		else
+			iniWin.y = before.y - 1;
+	}
+
+	
+	int xChange = (iniWin.x - before.x);
+	if (xChange > 8 || xChange < -8) {
+		if (xChange > 0)
+			iniWin.x = before.x + 5;
+		else
+			iniWin.x = before.x - 5;
+		//cout << "X Controlled" << endl;
+	}
+	
 
 	// locate the result window in the picture and update the body-size window too 
 	// Rect beforeRes = _result_temp;
 	_result_temp = iniWin + Point(_cm_win.x, _cm_win.y);
+
+	if (hasDetection) {
+		//cout << "Tracker #" << _ID << " has detection in the frame" << endl;
+		Rect scaled = scaleWin(detectionInThisFrame, TRACKING_TO_BODYSIZE_RATIO);
+		_result_temp.x = .6*scaled.x + .4*_result_temp.x;
+		_result_temp.y = .6*scaled.y + .4*_result_temp.y;
+		Mat aframe = frame_set[0];
+		rectangle(aframe, scaled, Scalar(255, 255, 255), 3);
+		rectangle(aframe, _result_temp, Scalar(255, 0, 255), 3);
+		imshow("de", aframe);
+	} else {
+		cout << "No detection in this frame" << endl;
+	}
+
+
 	_result_bodysize_temp = scaleWin(_result_temp, 1 / TRACKING_TO_BODYSIZE_RATIO);
 
 	if (getIsNovice()) {
@@ -352,6 +388,15 @@ void EnsembleTracker::deletePoorestTemplate()
 		_template_list.pop_back();
 	}
 }
+
+void EnsembleTracker::deletePoorestNegTemplate()
+{
+	if (_template_list.size() >= 1 && _template_list.back()->getScore() < 0) {
+		delete _template_list.back();
+		_template_list.pop_back();
+	}
+}
+
 void EnsembleTracker::demote()
 {
 	_is_novice = true;
@@ -420,4 +465,73 @@ void EnsembleTracker::registerTrackResult()
 		//_filter_result_history.push_back(win);
 		_result_history.push_back(_result_temp);//****************
 	}
+}
+
+// Play result given video path and result path
+void playResult(string videoPath, string resultPath, int videoResultRatio, bool drawHeatMap)
+{
+	cv::VideoWriter writer;
+	XMLBBoxReader boxReader(resultPath.c_str());
+	vector<Result2D> result;
+	VideoCapture cap(videoPath);
+	int width = (int)cap.get(CV_CAP_PROP_FRAME_WIDTH);
+	int height = (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT);
+	int fourcc = CV_FOURCC('D', 'I', 'V', 'X');
+	int fps = (int)cap.get(CV_CAP_PROP_FPS);
+	Mat frame;
+	Mat heatImg;
+	Heatmap hmap(height, width);
+	namedWindow("Result");
+
+	writer.open("result.avi", fourcc, fps, cv::Size(width, height));
+	if (drawHeatMap)
+		namedWindow("Heatmap");
+	while (true) {
+		cap.read(frame);
+		if (frame.empty())
+			break;
+
+		boxReader.getNextFrameResult(result);
+		vector<Result2D>::iterator it;
+		for (it = result.begin(); it != result.end(); it++) {
+			Result2D r2d = (*it);
+			for (int k = 0; k < videoResultRatio - 1; k++) {
+				r2d.xc *= 2;
+				r2d.yc *= 2;
+				r2d.h *= 2;
+				r2d.w *= 2;
+			}
+				
+			Point p1((int)((*it).xc - (*it).w / 2), (int)((*it).yc - (*it).h / 2));
+			Point p2((int)((*it).xc + (*it).w / 2), (int)((*it).yc + (*it).h / 2));
+			rectangle(frame, p1, p2, COLOR((*it).id), 3);
+		}
+		hmap.feed(result);
+		if (drawHeatMap)
+			hmap.drawHeatImg(frame);
+		writer.write(frame);
+		pyrDown(frame, frame);
+		imshow("Result", frame);
+		char key;
+		key = waitKey(60);
+		if (key == 'q')
+			break;
+		switch (key) {
+		case 'p':
+			while (waitKey(0) != 'p');
+		default:
+			break;
+		}
+	}
+	cv::destroyWindow("Result");
+}
+
+Result2D rect2Box(Rect rect)
+{
+	Result2D r;
+	r.xc = rect.x + rect.width / 2.0;
+	r.yc = rect.y + rect.height / 2.0;
+	r.w = rect.width;
+	r.h = rect.height;
+	return r;
 }

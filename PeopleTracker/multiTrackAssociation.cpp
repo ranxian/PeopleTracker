@@ -54,7 +54,7 @@ vector<Rect>WaitingList::outputQualified(double thresh)
 {
 	vector<Rect> ret;
 	for (list<Waiting>::iterator it = w_list.begin(); it != w_list.end();) {
-		if ((*it).accu>thresh) {
+		if ((*it).accu>thresh && (*it).life_count >= 3) {
 			ret.push_back((*it).currentWin);
 			// w_list.erase(it++);
 			// This seems to be wrong, since the iterator is invalidate after erasing from the vector.
@@ -197,6 +197,7 @@ void Controller::deleteObsoleteTracker(list<EnsembleTracker*>& _tracker_list)
 		if ((*it)->getHitFreq()*TIME_WINDOW_SIZE <= MAX(l - sqrt(l), 0)) {
 			(*it)->refcDec1();
 			(*it)->dump();
+			cout << "delete tracker " << (*it)->getID();
 			it = _tracker_list.erase(it);
 			continue;
 		} else if (!(*it)->getIsNovice() && (*it)->getTemplateNum()<_thresh_for_expert) {
@@ -243,16 +244,22 @@ TrakerManager::~TrakerManager()
 }
 void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 {
+	cout << "H---------BEGIN" << endl;
 	_controller.waitList.update();
 
 	list<EnsembleTracker*> expert_class;
 	list<EnsembleTracker*> novice_class;
 	vector<Rect> detection_left;
 	for (list<EnsembleTracker*>::iterator it = _tracker_list.begin(); it != _tracker_list.end(); it++) {
-		if ((*it)->getIsNovice())
+		if ((*it)->getIsNovice()) {
 			novice_class.push_back((*it));
-		else
+			cout << "Novice " << (*it)->getID() << endl;
+		}
+		else {
 			expert_class.push_back((*it));
+			cout << "Expert " << (*it)->getID() << endl;
+		}
+		(*it)->hasDetection = false;
 	}
 
 	//deal with experts
@@ -279,12 +286,17 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 						double dis_to_last = (*j_tl)->getDisToLast(shrinkWin);
 
 						/* ad hoc consistence enhancing rule, making association better*/
-						if (dis_to_last / (((double)(*j_tl)->getSuspensionCount() + 1) / (FRAME_RATE * 5 / 7) + 0.5)<((*j_tl)->getBodysizeResult().width*1.0)) {
+						if (dis_to_last / (((double)(*j_tl)->getSuspensionCount() + 1) / (FRAME_RATE * 10 / 7) + 0.5)<((*j_tl)->getBodysizeResult().width*1.5)) {
 							matrix(i, j) = d;//*h;
-						} else
+							cout << "Expert " << (*j_tl)->getID() << " distance = " << d << endl;;
+						} else {
 							matrix(i, j) = INFINITY;
-					} else
+							cout << "Expert " <<  (*j_tl)->getID() << " Goes to infinity" << endl;
+						}
+					} else {
 						matrix(i, j) = INFINITY;
+						cout << "Expert " << (*j_tl)->getID() << " Goes to infinity (" << d << ")" << endl;
+					}
 					j_tl++;
 				} else
 					matrix(i, j) = 100000;// dummy
@@ -299,6 +311,9 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 			for (int j = 0; j<hp_size; j++) {
 				if (matrix(i, j) == 0)//matched
 				{
+					cout << "Detection associates with expert" << " " << (*j_tl)->getID() << endl;;
+					(*j_tl)->hasDetection = true;
+					(*j_tl)->detectionInThisFrame = detections[i];
 					(*j_tl)->addAppTemplate(_frame_set, shrinkWin);//will change result_temp if demoted
 					flag = true;
 
@@ -340,10 +355,14 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 						double dis_to_last = (*j_tl)->getDisToLast(shrinkWin);
 
 						// ad hoc consistence enhancing rule, making association better
-						if (dis_to_last / (((double)(*j_tl)->getSuspensionCount() + 1) / (FRAME_RATE * 5 / 7) + 0.5)<((*j_tl)->getBodysizeResult().width) * 2)
+						if (dis_to_last / (((double)(*j_tl)->getSuspensionCount() + 1) / (FRAME_RATE * 10 / 7) + 0.5) < ((*j_tl)->getBodysizeResult().width) * 2) {
 							matrix(i, j) = d;//************could be changed
-						else
+							cout << "Novice " << (*j_tl)->getID() << " distance = " << d << endl;;
+						}
+						else {
 							matrix(i, j) = INFINITY;
+							cout << "Novice " << (*j_tl)->getID() << " goes to inifinity" << endl;
+						}
 					} else
 						matrix(i, j) = INFINITY;
 					j_tl++;
@@ -360,6 +379,9 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 			for (int j = 0; j<hp_size; j++) {
 				if (matrix(i, j) == 0)//matched
 				{
+					(*j_tl)->hasDetection = true;
+					(*j_tl)->detectionInThisFrame = detection_left[i];
+					cout << "Detection associates with novice" << " " << (*j_tl)->getID() << endl;;
 					(*j_tl)->addAppTemplate(_frame_set, shrinkWin);//will change result_temp if demoted
 					flag = true;
 					if ((*j_tl)->getIsNovice())//release the suspension
@@ -377,10 +399,14 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 		}
 	}
 	//starting position
-	else if (dt_size>0) {
-		for (int i = 0; i<dt_size; i++)
+	else if (dt_size > 0) {
+		for (int i = 0; i < dt_size; i++) {
+			cout << "Detection feed to waitlist" << endl;
 			_controller.waitList.feed(scaleWin(detection_left[i], BODYSIZE_TO_DETECTION_RATIO), 1.0);
+		}
 	}
+
+	cout << "H---------END" << endl;
 }
 void TrakerManager::doWork(Mat& frame)
 {
@@ -423,28 +449,31 @@ void TrakerManager::doWork(Mat& frame)
 			detect_rect.width /= 2;
 		}
 		// Check if heavily overlap with others
-		bool overlap;
+		bool overlap = false;
 		for (auto det : detections) {
 			Rect inter = det & detect_rect;
-			if (inter.area() / det.area() > 0.9 ||
-				inter.area() / det.area() > 0.9) {
+			if ((double)inter.area() / (double)det.area() > 0.4 ||
+				(double)inter.area() / (double)detect_rect.area() > 0.4) {
 				overlap = true;
 				break;
 			}
 		}
 		if (!overlap) {
-			detections.push_back(detect_rect);
-			response.push_back(6);
+			cout << "add face" << endl;
+			//detections.push_back(detect_rect);
+			//response.push_back(6);
 		}
 	}
 
 	//filter the detection
 	if (detections.size()>0) {
 		vector<Rect> detection_bodysize;
-		for (size_t i = 0; i<detections.size(); i++) {
+		for (size_t i = 0; i < detections.size(); i++) {
 			detection_bodysize.push_back(scaleWin(detections[i], BODYSIZE_TO_DETECTION_RATIO));
 		}
 		det_filter = _controller.filterDetection(detection_bodysize);
+		for (int k = 0; k < detections.size(); k++)
+			det_filter[k] = GOOD;
 	}
 	vector<Rect> good_detections;
 	for (size_t k = 0; k<detections.size(); k++) {
@@ -483,7 +512,8 @@ void TrakerManager::doWork(Mat& frame)
 		(*i)->calcConfidenceMap(_frame_set, _occupancy_map);
 		(*i)->track(_frame_set, _occupancy_map);
 		(*i)->calcScore();
-		(*i)->deletePoorTemplate(0.0);
+		(*i)->deletePoorTemplate(0);
+		
 
 		// update neighbors
 		(*i)->updateNeighbors(_tracker_list);
@@ -523,6 +553,7 @@ void TrakerManager::doWork(Mat& frame)
 			Rect iniWin = scaleWin(qualified[i], TRACKING_TO_BODYSIZE_RATIO);
 			tracker->addAppTemplate(_frame_set, iniWin);
 			_tracker_list.push_back(tracker);
+			cout << "Tracker " << tracker->getID() << " borned" << endl;
 			_tracker_count++;
 		}
 	}
@@ -536,20 +567,22 @@ void TrakerManager::doWork(Mat& frame)
 			(*i)->updateMatchHist(bgr);
 		}
 		if ((*i)->getResultHistory().size()>0) {
-			//(*i)->drawResult(frame);
+			(*i)->drawResult(frame, 1 / TRACKING_TO_BODYSIZE_RATIO);
 			if (!(*i)->getIsNovice() || 
 				((*i)->getIsNovice() && 
 				 (*i)->compareHisto(bgr, (*i)->getBodysizeResult()) > HIST_MATCH_THRESH_CONT))
 			{
-				(*i)->drawResult(frame, 1 / TRACKING_TO_BODYSIZE_RATIO);
+				// (*i)->drawResult(frame, 1 / TRACKING_TO_BODYSIZE_RATIO);
 
 				Rect win = (*i)->getResultHistory().back();
 				Point tx(win.x, win.y - 1);
 				char buff[10];
 				sprintf(buff, "%d", (*i)->getID());
 				string s = buff;
-				if (!(*i)->getIsNovice())
-					putText(frame, s, tx, FONT_HERSHEY_PLAIN, 1.5, COLOR((*i)->getID()), 2);
+				if (!(*i)->getIsNovice()) {
+					putText(frame, s + " " + std::to_string((*i)->getTemplateNum()), tx, FONT_HERSHEY_PLAIN, 1.5, COLOR((*i)->getID()), 2);
+					(*i)->drawAssRadius(frame);
+				}
 
 				//output result to xml
 				double scale = 1 / TRACKING_TO_BODYSIZE_RATIO - 1;
